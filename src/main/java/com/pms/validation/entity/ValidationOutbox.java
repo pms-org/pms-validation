@@ -31,9 +31,6 @@ public class ValidationOutbox {
     @Column(name = "cusip_name")
     private String cusipName;
 
-    @Column(name = "sector_name")
-    private String sectorName;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "side")
     private TradeSide side;
