@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @Data
 
 @Entity
-@Table(name = "validated_outbox")
+@Table(name = "validation_outbox")
 public class ValidationOutbox {
     @Id
     @Column(name = "trade_id")

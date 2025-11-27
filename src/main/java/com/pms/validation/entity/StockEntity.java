@@ -2,7 +2,6 @@ package com.pms.validation.entity;
 
 import java.util.UUID;
 
-import jakarta.annotation.Generated;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -13,7 +12,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
@@ -22,16 +20,16 @@ import lombok.NoArgsConstructor;
 @Table(name = "stocks")
 public class StockEntity {
     @Id
-    @GeneratedValue(strategy=GenerationType.UUID)
-    @Column(name="stock_id")
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "stock_id")
     private UUID stockId;
 
-    @Column(name="cusip_id")
+    @Column(name = "cusip_id")
     private String cusipId;
 
-    @Column(name="cusip_name")
+    @Column(name = "cusip_name")
     private String cusipName;
 
-    @Column(name="sector_name")
+    @Column(name = "sector_name")
     private String sectorName;
 }
