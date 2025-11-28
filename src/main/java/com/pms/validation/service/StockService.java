@@ -39,7 +39,7 @@ public class StockService {
         }
     }
 
-    public StockEntity saveStock(StockEntity stockEntity) {
-        return stockDao.save(stockEntity);
-    }
+    // public StockEntity saveStock(StockEntity stockEntity) {
+    // return stockDao.save(stockEntity);
+    // }
 }

@@ -28,7 +28,6 @@ public class StockController {
         return ResponseEntity.ok(list);
     }
 
-    // Changed to explicit path to avoid ambiguous mappings (assumption)
     @GetMapping("/id/{stockId}")
     public ResponseEntity<StockEntity> getStockById(@PathVariable("stockId") Long stockId) {
         StockEntity stock = stockService.getStockById(stockId);
@@ -47,12 +46,14 @@ public class StockController {
         return ResponseEntity.ok(stocks);
     }
 
-    @PostMapping("")
-    public ResponseEntity<StockEntity> addStock(@RequestBody StockEntity stockEntity) {
-        StockEntity created = stockService.saveStock(stockEntity);
-        // return 201 with Location header pointing to new resource id when possible
-        URI location = URI.create(String.format("/stocks/id/%d", created.getStockId()));
-        return ResponseEntity.created(location).body(created);
-    }
+    // @PostMapping("")
+    // public ResponseEntity<StockEntity> addStock(@RequestBody StockEntity
+    // stockEntity) {
+    // StockEntity created = stockService.saveStock(stockEntity);
+    // // return 201 with Location header pointing to new resource id when possible
+    // URI location = URI.create(String.format("/stocks/id/%d",
+    // created.getStockId()));
+    // return ResponseEntity.created(location).body(created);
+    // }
 
 }
