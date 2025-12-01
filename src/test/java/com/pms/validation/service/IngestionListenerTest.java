@@ -14,7 +14,7 @@ import static org.mockito.Mockito.*;
 public class IngestionListenerTest {
 
     private IdempotencyService idempotencyService;
-    private IngestionProcessor ingestionProcessor;
+    private ValidationCore ingestionProcessor;
     private IngestionListener ingestionListener;
     private ObjectMapper mapper = new ObjectMapper();
     {
@@ -26,7 +26,7 @@ public class IngestionListenerTest {
     @BeforeEach
     public void setup() throws Exception {
         idempotencyService = mock(IdempotencyService.class);
-        ingestionProcessor = mock(IngestionProcessor.class);
+        ingestionProcessor = mock(ValidationCore.class);
 
         ingestionListener = new IngestionListener();
         var f1 = IngestionListener.class.getDeclaredField("idempotencyService");

@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class IngestionProcessor {
+public class ValidationCore {
 
     private static final Logger logger = Logger.getLogger(KafkaConsumerService.class.getName());
 

@@ -16,7 +16,7 @@ public class KafkaConsumerService {
     private static final Logger logger = Logger.getLogger(KafkaConsumerService.class.getName());
 
     @Autowired
-    private IngestionProcessor ingestionProcessor;
+    private ValidationCore validationCore;
 
     private ObjectMapper mapper;
 
@@ -26,7 +26,7 @@ public class KafkaConsumerService {
             @Header(KafkaHeaders.OFFSET) Long offset) {
         try {
             IngestionEventDto ingestionEvent = mapper.readValue(payload, IngestionEventDto.class);
-            ingestionProcessor.processInfo(ingestionEvent);
+            validationCore.processInfo(ingestionEvent);
         } catch (Exception ex) {
             logger.severe("Error in IngestionListener.onMessage: " + ex.getMessage());
             ex.printStackTrace();

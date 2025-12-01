@@ -21,14 +21,14 @@ import static org.mockito.Mockito.*;
 class KafkaConsumerServiceTest {
 
     private IdempotencyService idempotencyService;
-    private IngestionProcessor ingestionProcessor;
+    private ValidationCore ingestionProcessor;
     private ObjectMapper mapper;
     private KafkaConsumerService kafkaConsumerService;
 
     @BeforeEach
     public void setup() throws Exception {
         idempotencyService = mock(IdempotencyService.class);
-        ingestionProcessor = mock(IngestionProcessor.class);
+        ingestionProcessor = mock(ValidationCore.class);
 
         mapper = new ObjectMapper();
         mapper.findAndRegisterModules();
