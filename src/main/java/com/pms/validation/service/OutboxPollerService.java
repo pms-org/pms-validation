@@ -24,7 +24,6 @@ public class OutboxPollerService {
     @Autowired
     private KafkaProducerService kafkaProducerService;
 
-    // Runs every 2 seconds
     @Scheduled(fixedDelay = 2000)
     @Transactional
     public void pollAndPublish() {
@@ -40,9 +39,9 @@ public class OutboxPollerService {
                 log.info("Publishing outbox record {} for trade {}",
                         outbox.getValidationOutboxId(), outbox.getTradeId());
 
-                kafkaProducerService.sendValidationEventFromOutbox(outbox);
+                kafkaProducerService.sendValidationEvent(outbox);
 
-                outbox.setStatus("SENT");
+                outbox.setSentStatus("SENT");
                 outbox.setUpdatedAt(LocalDateTime.now());
                 outboxRepo.save(outbox);
 
@@ -50,7 +49,7 @@ public class OutboxPollerService {
                 log.error("Failed publishing outbox {}: {}",
                         outbox.getValidationOutboxId(), ex.getMessage());
 
-                outbox.setStatus("FAILED");
+                outbox.setSentStatus("FAILED");
                 outbox.setUpdatedAt(LocalDateTime.now());
                 outboxRepo.save(outbox);
             }

@@ -2,11 +2,11 @@
 package com.pms.validation.rules;
 
 import com.pms.validation.dto.TradeDto;
-import com.pms.validation.dto.ValidationResult;
+import com.pms.validation.dto.ValidationResultDto;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-function void addError(ValidationResult res, String msg) {
+function void addError(ValidationResultDto res, String msg) {
     if (res != null) {
         res.addError(msg);
     }
@@ -19,7 +19,7 @@ function boolean isBlank(String s) {
 rule "Trade - required fields"
     when
         $t : TradeDto()
-        $r : ValidationResult()
+        $r : ValidationResultDto()
         eval($t != null)
     then
         if ($t.getTradeId() == null) addError($r, "tradeId is required");
@@ -30,7 +30,7 @@ end
 rule "Trade - price must be positive"
     when
         $t : TradeDto( pricePerStock != null )
-        $r : ValidationResult()
+        $r : ValidationResultDto()
     then
         if ($t.getPricePerStock().compareTo(BigDecimal.ZERO) <= 0) {
             addError($r, "pricePerStock must be greater than 0");
@@ -40,7 +40,7 @@ end
 rule "Trade - quantity must be positive"
     when
         $t : TradeDto( quantity != null )
-        $r : ValidationResult()
+        $r : ValidationResultDto()
     then
         if ($t.getQuantity() == null || $t.getQuantity() <= 0) {
             addError($r, "quantity must be greater than 0");
@@ -53,7 +53,7 @@ end
 rule "Trade - timestamp sanity"
     when
         $t : TradeDto( timestamp != null )
-        $r : ValidationResult()
+        $r : ValidationResultDto()
     then
         if ($t.getTimestamp().isAfter(LocalDateTime.now())) {
             addError($r, "timestamp cannot be in the future");
@@ -63,7 +63,7 @@ end
 rule "Trade - side validation"
     when
         $t : TradeDto( side == null )
-        $r : ValidationResult()
+        $r : ValidationResultDto()
     then
         addError($r, "side must be provided (BUY or SELL)");
 end
@@ -71,7 +71,7 @@ end
 rule "Trade - symbol basic format"
     when
         $t : TradeDto( symbol != null )
-        $r : ValidationResult()
+        $r : ValidationResultDto()
     then
         String s = $t.getSymbol();
         if (s.length() < 1 || s.length() > 10) {
@@ -82,7 +82,7 @@ end
 rule "Trade - high price flag"
     when
         $t : TradeDto( pricePerStock != null )
-        $r : ValidationResult()
+        $r : ValidationResultDto()
     then
         if ($t.getPricePerStock().compareTo(new BigDecimal("1000000")) >= 0) {
             addError($r, "pricePerStock unusually high - requires review");

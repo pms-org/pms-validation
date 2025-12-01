@@ -19,7 +19,7 @@ public class IngestionProcessorTest {
     private TradeValidationService tradeValidationService;
     private ValidationOutboxService validationOutboxService;
     private KafkaProducerService kafkaProducerService;
-    private IngestionProcessor ingestionProcessor;
+    private ValidationCore ingestionProcessor;
 
     @BeforeEach
     public void setup() {
@@ -28,22 +28,22 @@ public class IngestionProcessorTest {
         validationOutboxService = mock(ValidationOutboxService.class);
         kafkaProducerService = mock(KafkaProducerService.class);
 
-        ingestionProcessor = new IngestionProcessor();
+        ingestionProcessor = new ValidationCore();
         // inject mocks via reflection
         try {
-            var f1 = IngestionProcessor.class.getDeclaredField("idempotencyService");
+            var f1 = ValidationCore.class.getDeclaredField("idempotencyService");
             f1.setAccessible(true);
             f1.set(ingestionProcessor, idempotencyService);
 
-            var f2 = IngestionProcessor.class.getDeclaredField("tradeValidationService");
+            var f2 = ValidationCore.class.getDeclaredField("tradeValidationService");
             f2.setAccessible(true);
             f2.set(ingestionProcessor, tradeValidationService);
 
-            var f3 = IngestionProcessor.class.getDeclaredField("validationOutboxService");
+            var f3 = ValidationCore.class.getDeclaredField("validationOutboxService");
             f3.setAccessible(true);
             f3.set(ingestionProcessor, validationOutboxService);
 
-            var f4 = IngestionProcessor.class.getDeclaredField("kafkaProducerService");
+            var f4 = ValidationCore.class.getDeclaredField("kafkaProducerService");
             f4.setAccessible(true);
             f4.set(ingestionProcessor, kafkaProducerService);
         } catch (Exception ex) {
