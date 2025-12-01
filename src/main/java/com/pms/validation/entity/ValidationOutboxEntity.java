@@ -66,7 +66,7 @@ public class ValidationOutboxEntity {
     private String validationStatus;
 
     @Column(name = "validation_errors")
-    private String validationErrors;
+    private String validationErrors; // Semi colon separated errors
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
