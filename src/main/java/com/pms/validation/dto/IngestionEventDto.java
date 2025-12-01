@@ -12,11 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-/**
- * @deprecated Use {@link IngestionEventDto} instead.
- */
-@Deprecated
-public class OutboxEventDto {
+public class IngestionEventDto {
     private UUID eventId;
     private String aggregateId;
     private String eventType;

@@ -4,16 +4,14 @@ import com.pms.validation.dto.TradeDto;
 import com.pms.validation.dto.ValidationResult;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
+import org.springframework.stereotype.Service;
 
-/**
- * Legacy class kept for backward-compatibility during refactor.
- * Replaced by {@code TradeValidationService} - prefer that one.
- */
-@Deprecated
-public class ValidationService {
+@Service
+public class TradeValidationService {
+
     private final KieContainer kieContainer;
 
-    public ValidationService(KieContainer kieContainer) {
+    public TradeValidationService(KieContainer kieContainer) {
         this.kieContainer = kieContainer;
     }
 

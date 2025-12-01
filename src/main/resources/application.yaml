@@ -1,11 +1,13 @@
+spring.config.import: optional:dotenv:./.env
+
 spring:
   application:
     name: validation
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/validationdb
+    url: jdbc:postgresql://localhost:5432/validation_db
     username: postgres
-    password: Jaas@postgres
+    password: kk75
     driver-class-name: org.postgresql.Driver
 
   jpa:

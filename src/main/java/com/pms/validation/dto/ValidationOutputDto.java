@@ -14,11 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-/**
- * @deprecated Use {@link ValidationOutputDto} instead.
- */
-@Deprecated
-public class ValidationEventDto implements Serializable {
+public class ValidationOutputDto implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private UUID eventId;

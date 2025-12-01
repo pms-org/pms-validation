@@ -2,9 +2,9 @@ package com.pms.validation.service;
 
 import com.pms.validation.dao.ValidationOutboxRepository;
 import com.pms.validation.dto.TradeDto;
-import com.pms.validation.dto.ValidationEventDto;
+import com.pms.validation.dto.ValidationOutputDto;
 import com.pms.validation.dto.ValidationResult;
-import com.pms.validation.entity.ValidationOutbox;
+import com.pms.validation.entity.ValidationOutboxEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,8 +20,8 @@ public class ValidationOutboxService {
     private ValidationOutboxRepository repository;
 
     @Transactional
-    public ValidationOutbox saveValidationEvent(TradeDto trade, ValidationResult result, String status) {
-        ValidationOutbox outbox = new ValidationOutbox();
+    public ValidationOutboxEntity saveValidationEvent(TradeDto trade, ValidationResult result, String status) {
+        ValidationOutboxEntity outbox = new ValidationOutboxEntity();
         outbox.setTradeId(trade.getTradeId());
         outbox.setPortfolioId(trade.getPortfolioId());
         outbox.setSymbol(trade.getSymbol());
@@ -37,12 +37,12 @@ public class ValidationOutboxService {
         return repository.save(outbox);
     }
 
-    public ValidationEventDto buildValidationEvent(TradeDto trade, ValidationResult result) {
+    public ValidationOutputDto buildValidationEvent(TradeDto trade, ValidationResult result) {
         String status = result.isValid() ? "SUCCESS" : "FAILED";
         String errors = result.getErrors().isEmpty() ? null
                 : result.getErrors().stream().collect(Collectors.joining("; "));
 
-        return ValidationEventDto.builder()
+        return ValidationOutputDto.builder()
                 .eventId(UUID.randomUUID())
                 .tradeId(trade.getTradeId())
                 .portfolioId(trade.getPortfolioId())

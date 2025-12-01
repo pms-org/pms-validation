@@ -1,9 +1,9 @@
 package com.pms.validation.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pms.validation.dto.OutboxEventDto;
+import com.pms.validation.dto.IngestionEventDto;
 import com.pms.validation.dto.TradeDto;
-import com.pms.validation.dto.ValidationEventDto;
+import com.pms.validation.dto.ValidationOutputDto;
 import com.pms.validation.dto.ValidationResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -20,7 +20,7 @@ public class KafkaConsumerService {
     private static final Logger logger = Logger.getLogger(KafkaConsumerService.class.getName());
 
     @Autowired
-    private ValidationService validationService;
+    private com.pms.validation.service.TradeValidationService tradeValidationService;
 
     @Autowired
     private ValidationOutboxService outboxService;
@@ -29,7 +29,7 @@ public class KafkaConsumerService {
     private IdempotencyService idempotencyService;
 
     @Autowired
-    private KafkaTemplate<String, ValidationEventDto> kafkaTemplate;
+    private KafkaTemplate<String, ValidationOutputDto> kafkaTemplate;
 
     @Autowired
     private ObjectMapper mapper;
@@ -39,7 +39,7 @@ public class KafkaConsumerService {
             @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
             @Header(KafkaHeaders.OFFSET) Long offset) {
         try {
-            OutboxEventDto ingestionEvent = mapper.readValue(payload, OutboxEventDto.class);
+            IngestionEventDto ingestionEvent = mapper.readValue(payload, IngestionEventDto.class);
 
             if (idempotencyService.isAlreadyProcessed(ingestionEvent.getEventId())) {
                 logger.info("Ignoring duplicate event: " + ingestionEvent.getEventId());
@@ -56,9 +56,9 @@ public class KafkaConsumerService {
                 return;
             }
 
-            ValidationResult result = validationService.validateTrade(trade);
+            ValidationResult result = tradeValidationService.validateTrade(trade);
 
-            ValidationEventDto validationEvent = outboxService.buildValidationEvent(trade, result);
+            ValidationOutputDto validationEvent = outboxService.buildValidationEvent(trade, result);
 
             String topic = result.isValid() ? "validation-topic" : "validation-dlq";
             outboxService.saveValidationEvent(trade, result, result.isValid() ? "SUCCESS" : "FAILED");
