@@ -32,10 +32,8 @@ public class KafkaConsumerService {
         try {
             IngestionEventDto ingestionEvent = mapper.readValue(payload, IngestionEventDto.class);
 
-            // Deserialize payload to obtain tradeId for idempotency check
             TradeDto trade = mapper.readValue(ingestionEvent.getPayloadBytes(), TradeDto.class);
 
-            // Fast check to avoid processing if trade already handled
             if (idempotencyService.isAlreadyProcessed(trade.getTradeId())) {
                 logger.info("Ignoring duplicate trade: " + trade.getTradeId());
                 return;
@@ -43,7 +41,7 @@ public class KafkaConsumerService {
 
             logger.info("Delegating trade " + trade.getTradeId() + " to processor");
 
-            ingestionProcessor.process(ingestionEvent, trade);
+            ingestionProcessor.processInfo(ingestionEvent, trade);
 
         } catch (Exception ex) {
             logger.severe("Error in IngestionListener.onMessage: " + ex.getMessage());

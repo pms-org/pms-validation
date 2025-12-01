@@ -1,10 +1,11 @@
 package com.pms.validation.service;
 
-import com.pms.validation.dao.ValidationOutboxRepository;
 import com.pms.validation.dto.TradeDto;
 import com.pms.validation.dto.ValidationOutputDto;
 import com.pms.validation.dto.ValidationResultDto;
 import com.pms.validation.entity.ValidationOutboxEntity;
+import com.pms.validation.repository.ValidationOutboxRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +26,6 @@ public class ValidationOutboxService {
         outbox.setTradeId(trade.getTradeId());
         outbox.setPortfolioId(trade.getPortfolioId());
         outbox.setSymbol(trade.getSymbol());
-        outbox.setSectorName(null);
         outbox.setSide(trade.getSide());
         outbox.setPricePerStock(trade.getPricePerStock());
         outbox.setQuantity(trade.getQuantity());
@@ -49,7 +49,7 @@ public class ValidationOutboxService {
                 .portfolioId(trade.getPortfolioId())
                 .symbol(trade.getSymbol())
                 .side(trade.getSide())
-                .pricePerStock(trade.getPricePerStock().toPlainString())
+                .pricePerStock(trade.getPricePerStock())
                 .quantity(trade.getQuantity())
                 .tradeTimestamp(trade.getTimestamp())
                 .validationStatus(status)

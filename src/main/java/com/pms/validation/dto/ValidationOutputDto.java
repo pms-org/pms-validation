@@ -1,6 +1,7 @@
 package com.pms.validation.dto;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -22,7 +23,7 @@ public class ValidationOutputDto implements Serializable {
     private UUID portfolioId;
     private String symbol;
     private TradeSide side;
-    private String pricePerStock;
+    private BigDecimal pricePerStock;
     private Long quantity;
     private LocalDateTime tradeTimestamp;
     private String validationStatus;

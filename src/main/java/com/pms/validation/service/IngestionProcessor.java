@@ -2,17 +2,22 @@ package com.pms.validation.service;
 
 import com.pms.validation.dto.IngestionEventDto;
 import com.pms.validation.dto.TradeDto;
-import com.pms.validation.dto.ValidationOutputDto;
 import com.pms.validation.dto.ValidationResultDto;
+import com.pms.validation.entity.ValidationOutboxEntity;
+import com.pms.validation.repository.ValidationOutboxRepository;
+import com.pms.validation.enums.TradeSide;
+import com.pms.validation.enums.Sector;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.logging.Logger;
+import java.time.LocalDateTime;
 
 @Service
+@Slf4j
 public class IngestionProcessor {
-
-    private static final Logger logger = Logger.getLogger(IngestionProcessor.class.getName());
 
     @Autowired
     private IdempotencyService idempotencyService;
@@ -21,36 +26,45 @@ public class IngestionProcessor {
     private TradeValidationService tradeValidationService;
 
     @Autowired
-    private ValidationOutboxService validationOutboxService;
+    private ValidationOutboxRepository outboxRepo;
 
-    @Autowired
-    private KafkaProducerService kafkaProducerService;
+    @Transactional
+    public boolean handleTransaction(TradeDto trade) {
 
-    public void process(IngestionEventDto ingestionEvent, TradeDto trade) {
+        boolean marked = idempotencyService.markAsProcessed(trade.getTradeId(), "ingestion-topic");
+        if (!marked) {
+            log.info("Trade already processed: {}", trade.getTradeId());
+            return false;
+        }
+
+        ValidationResultDto result = tradeValidationService.validateTrade(trade);
+        String status = result.isValid() ? "SUCCESS" : "FAILED";
+
+        ValidationOutboxEntity outbox = ValidationOutboxEntity.builder()
+                .tradeId(trade.getTradeId())
+                .portfolioId(trade.getPortfolioId())
+                .symbol(trade.getSymbol())
+                .side(trade.getSide())
+                .pricePerStock(trade.getPricePerStock())
+                .quantity(trade.getQuantity())
+                .timestamp(LocalDateTime.now())
+                .status("PENDING") // Outbox Pattern
+                .build();
+
+        outboxRepo.save(outbox);
+
+        log.info("Outbox entry inserted for trade {}", trade.getTradeId());
+        return true;
+    }
+
+    public void processInfo(IngestionEventDto ingestionEvent, TradeDto trade) {
         try {
-            // Atomic mark using tradeId - prevents races
-            boolean marked = idempotencyService.markAsProcessed(trade.getTradeId(), "ingestion-topic");
-            if (!marked) {
-                logger.info("Trade already processed (during mark): " + trade.getTradeId());
+            boolean ok = handleTransaction(trade);
+            if (!ok)
                 return;
-            }
-
-            // Validate
-            ValidationResultDto result = tradeValidationService.validateTrade(trade);
-
-            // Build event and persist outbox
-            ValidationOutputDto output = validationOutboxService.buildValidationEvent(trade, result);
-            String status = result.isValid() ? "SUCCESS" : "FAILED";
-            validationOutboxService.saveValidationEvent(trade, result, status);
-
-            // Publish
-            String topic = result.isValid() ? "validation-topic" : "validation-dlq";
-            kafkaProducerService.sendValidationEvent(topic, output);
-            logger.info("Published validation event for trade " + trade.getTradeId() + " to " + topic);
 
         } catch (Exception ex) {
-            logger.severe("Error in IngestionProcessor.process: " + ex.getMessage());
-            ex.printStackTrace();
+            log.error("Error in IngestionProcessor.process: {}", ex.getMessage(), ex);
         }
     }
 }

@@ -1,7 +1,8 @@
 package com.pms.validation.service;
 
-import com.pms.validation.dao.ProcessedMessageRepository;
 import com.pms.validation.entity.ProcessedMessage;
+import com.pms.validation.repository.ProcessedMessageRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

@@ -5,11 +5,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.pms.validation.dao.StockRepository;
 import com.pms.validation.entity.StockEntity;
 import com.pms.validation.enums.Sector;
 import com.pms.validation.exception.BadRequestException;
 import com.pms.validation.exception.ResourceNotFoundException;
+import com.pms.validation.repository.StockRepository;
 
 @Service
 public class StockService {

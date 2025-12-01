@@ -18,14 +18,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Entity
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
-
-@Entity
+@Builder
 @Table(name = "validation_outbox")
 public class ValidationOutboxEntity {
     @Id
@@ -41,9 +42,6 @@ public class ValidationOutboxEntity {
 
     @Column(name = "symbol")
     private String symbol;
-
-    @Column(name = "sector_name")
-    private Sector sectorName;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "side")

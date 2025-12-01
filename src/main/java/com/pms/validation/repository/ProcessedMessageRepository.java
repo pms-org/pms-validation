@@ -1,4 +1,4 @@
-package com.pms.validation.dao;
+package com.pms.validation.repository;
 
 import com.pms.validation.entity.ProcessedMessage;
 import org.springframework.data.jpa.repository.JpaRepository;
