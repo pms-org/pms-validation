@@ -3,7 +3,7 @@ package com.pms.validation.service;
 import com.pms.validation.dto.IngestionEventDto;
 import com.pms.validation.dto.TradeDto;
 import com.pms.validation.dto.ValidationOutputDto;
-import com.pms.validation.dto.ValidationResult;
+import com.pms.validation.dto.ValidationResultDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
@@ -69,9 +69,9 @@ public class IngestionProcessorTest {
                 .timestamp(LocalDateTime.now())
                 .build();
 
-        when(idempotencyService.markAsProcessed(eq(eventId), anyString())).thenReturn(true);
+        when(idempotencyService.markAsProcessed(eq(trade.getTradeId()), anyString())).thenReturn(true);
 
-        ValidationResult vr = new ValidationResult();
+        ValidationResultDto vr = new ValidationResultDto();
         when(tradeValidationService.validateTrade(trade)).thenReturn(vr);
 
         ValidationOutputDto output = ValidationOutputDto.builder()
@@ -89,7 +89,7 @@ public class IngestionProcessorTest {
 
         ingestionProcessor.process(ingestionEvent, trade);
 
-        verify(idempotencyService).markAsProcessed(eq(eventId), anyString());
+        verify(idempotencyService).markAsProcessed(eq(trade.getTradeId()), anyString());
         verify(tradeValidationService).validateTrade(trade);
         verify(validationOutboxService).buildValidationEvent(trade, vr);
         verify(validationOutboxService).saveValidationEvent(trade, vr, "SUCCESS");
@@ -98,19 +98,19 @@ public class IngestionProcessorTest {
 
     @Test
     void duplicate_markFails_noProcessing() {
-        UUID eventId = UUID.randomUUID();
-        IngestionEventDto ingestionEvent = IngestionEventDto.builder()
-                .eventId(eventId)
+        UUID eventId2 = UUID.randomUUID();
+        IngestionEventDto ingestionEvent2 = IngestionEventDto.builder()
+                .eventId(eventId2)
                 .payloadBytes(new byte[0])
                 .build();
 
-        TradeDto trade = TradeDto.builder().tradeId(UUID.randomUUID()).build();
+        TradeDto trade2 = TradeDto.builder().tradeId(UUID.randomUUID()).build();
 
-        when(idempotencyService.markAsProcessed(eq(eventId), anyString())).thenReturn(false);
+        when(idempotencyService.markAsProcessed(eq(trade2.getTradeId()), anyString())).thenReturn(false);
 
-        ingestionProcessor.process(ingestionEvent, trade);
+        ingestionProcessor.process(ingestionEvent2, trade2);
 
-        verify(idempotencyService).markAsProcessed(eq(eventId), anyString());
+        verify(idempotencyService).markAsProcessed(eq(trade2.getTradeId()), anyString());
         verifyNoInteractions(tradeValidationService);
         verifyNoInteractions(validationOutboxService);
         verifyNoInteractions(kafkaProducerService);

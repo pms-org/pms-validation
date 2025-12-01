@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Repository
 public interface ProcessedMessageRepository extends JpaRepository<ProcessedMessage, Long> {
-    Optional<ProcessedMessage> findByEventIdAndConsumerGroup(UUID eventId, String consumerGroup);
+    Optional<ProcessedMessage> findByTradeIdAndConsumerGroup(UUID tradeId, String consumerGroup);
 
-    boolean existsByEventIdAndConsumerGroup(UUID eventId, String consumerGroup);
+    boolean existsByTradeIdAndConsumerGroup(UUID tradeId, String consumerGroup);
 }

@@ -6,7 +6,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class ValidationResult {
+public class ValidationResultDto {
     private boolean valid = true;
     private List<String> errors = new ArrayList<>();
 

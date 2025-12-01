@@ -3,7 +3,7 @@ package com.pms.validation.service;
 import com.pms.validation.dao.ValidationOutboxRepository;
 import com.pms.validation.dto.TradeDto;
 import com.pms.validation.dto.ValidationOutputDto;
-import com.pms.validation.dto.ValidationResult;
+import com.pms.validation.dto.ValidationResultDto;
 import com.pms.validation.entity.ValidationOutboxEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ public class ValidationOutboxService {
     private ValidationOutboxRepository repository;
 
     @Transactional
-    public ValidationOutboxEntity saveValidationEvent(TradeDto trade, ValidationResult result, String status) {
+    public ValidationOutboxEntity saveValidationEvent(TradeDto trade, ValidationResultDto result, String status) {
         ValidationOutboxEntity outbox = new ValidationOutboxEntity();
         outbox.setTradeId(trade.getTradeId());
         outbox.setPortfolioId(trade.getPortfolioId());
@@ -38,7 +38,7 @@ public class ValidationOutboxService {
         return repository.save(outbox);
     }
 
-    public ValidationOutputDto buildValidationEvent(TradeDto trade, ValidationResult result) {
+    public ValidationOutputDto buildValidationEvent(TradeDto trade, ValidationResultDto result) {
         String status = result.isValid() ? "SUCCESS" : "FAILED";
         String errors = result.getErrors().isEmpty() ? null
                 : result.getErrors().stream().collect(Collectors.joining("; "));

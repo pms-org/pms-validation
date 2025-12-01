@@ -1,7 +1,7 @@
 package com.pms.validation.service;
 
 import com.pms.validation.dto.TradeDto;
-import com.pms.validation.dto.ValidationResult;
+import com.pms.validation.dto.ValidationResultDto;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.springframework.stereotype.Service;
@@ -15,9 +15,9 @@ public class TradeValidationService {
         this.kieContainer = kieContainer;
     }
 
-    public ValidationResult validateTrade(TradeDto trade) {
+    public ValidationResultDto validateTrade(TradeDto trade) {
         try {
-            ValidationResult result = new ValidationResult();
+            ValidationResultDto result = new ValidationResultDto();
 
             KieSession kieSession = kieContainer.newKieSession();
 
@@ -31,7 +31,7 @@ public class TradeValidationService {
 
             return result;
         } catch (Exception ex) {
-            ValidationResult err = new ValidationResult();
+            ValidationResultDto err = new ValidationResultDto();
             err.addError("Rule validation error: " + ex.getMessage());
             return err;
         }

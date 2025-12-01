@@ -22,19 +22,19 @@ public class IdempotencyService {
     private ProcessedMessageRepository repository;
 
     @Transactional
-    public boolean markAsProcessed(UUID eventId, String topic) {
+    public boolean markAsProcessed(UUID tradeId, String topic) {
         try {
-            ProcessedMessage message = new ProcessedMessage(eventId, consumerGroup, topic);
+            ProcessedMessage message = new ProcessedMessage(tradeId, consumerGroup, topic);
             repository.save(message);
-            logger.info("Marked event " + eventId + " as processed");
+            logger.info("Marked trade " + tradeId + " as processed");
             return true;
         } catch (Exception ex) {
-            logger.warning("Event " + eventId + " already processed or constraint violation: " + ex.getMessage());
+            logger.warning("Trade " + tradeId + " already processed or constraint violation: " + ex.getMessage());
             return false;
         }
     }
 
-    public boolean isAlreadyProcessed(UUID eventId) {
-        return repository.existsByEventIdAndConsumerGroup(eventId, consumerGroup);
+    public boolean isAlreadyProcessed(UUID tradeId) {
+        return repository.existsByTradeIdAndConsumerGroup(tradeId, consumerGroup);
     }
 }

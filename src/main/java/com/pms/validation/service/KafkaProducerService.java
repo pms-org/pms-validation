@@ -12,6 +12,6 @@ public class KafkaProducerService {
     private KafkaTemplate<String, ValidationOutputDto> kafkaTemplate;
 
     public void sendValidationEvent(String topic, ValidationOutputDto event) {
-        kafkaTemplate.send(topic, event.getTradeId().toString(), event);
+        kafkaTemplate.send(topic, event.getPortfolioId().toString(), event);
     }
 }

@@ -3,7 +3,7 @@ package com.pms.validation.service;
 import com.pms.validation.dto.IngestionEventDto;
 import com.pms.validation.dto.TradeDto;
 import com.pms.validation.dto.ValidationOutputDto;
-import com.pms.validation.dto.ValidationResult;
+import com.pms.validation.dto.ValidationResultDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,15 +28,15 @@ public class IngestionProcessor {
 
     public void process(IngestionEventDto ingestionEvent, TradeDto trade) {
         try {
-            // Atomic mark - prevents races
-            boolean marked = idempotencyService.markAsProcessed(ingestionEvent.getEventId(), "ingestion-topic");
+            // Atomic mark using tradeId - prevents races
+            boolean marked = idempotencyService.markAsProcessed(trade.getTradeId(), "ingestion-topic");
             if (!marked) {
-                logger.info("Event already processed (during mark): " + ingestionEvent.getEventId());
+                logger.info("Trade already processed (during mark): " + trade.getTradeId());
                 return;
             }
 
             // Validate
-            ValidationResult result = tradeValidationService.validateTrade(trade);
+            ValidationResultDto result = tradeValidationService.validateTrade(trade);
 
             // Build event and persist outbox
             ValidationOutputDto output = validationOutboxService.buildValidationEvent(trade, result);

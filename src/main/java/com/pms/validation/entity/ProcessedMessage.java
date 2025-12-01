@@ -12,15 +12,17 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "processed_messages")
+@Table(name = "processed_messages", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_trade_id_consumer_group", columnNames = { "trade_id", "consumer_group" })
+})
 public class ProcessedMessage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "event_id", nullable = false)
-    private UUID eventId;
+    @Column(name = "trade_id", nullable = false)
+    private UUID tradeId;
 
     @Column(name = "consumer_group", nullable = false)
     private String consumerGroup;
@@ -31,8 +33,8 @@ public class ProcessedMessage {
     @Column(name = "processed_at", nullable = false)
     private LocalDateTime processedAt;
 
-    public ProcessedMessage(UUID eventId, String consumerGroup, String topic) {
-        this.eventId = eventId;
+    public ProcessedMessage(UUID tradeId, String consumerGroup, String topic) {
+        this.tradeId = tradeId;
         this.consumerGroup = consumerGroup;
         this.topic = topic;
         this.processedAt = LocalDateTime.now();
