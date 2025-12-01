@@ -2,7 +2,6 @@ package com.pms.validation.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pms.validation.dto.IngestionEventDto;
-import com.pms.validation.dto.TradeDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -19,10 +18,6 @@ public class KafkaConsumerService {
     @Autowired
     private IngestionProcessor ingestionProcessor;
 
-    @Autowired
-    private IdempotencyService idempotencyService;
-
-    @Autowired
     private ObjectMapper mapper;
 
     @KafkaListener(topics = "ingestion-topic", groupId = "${spring.kafka.consumer.group-id}")
@@ -31,18 +26,7 @@ public class KafkaConsumerService {
             @Header(KafkaHeaders.OFFSET) Long offset) {
         try {
             IngestionEventDto ingestionEvent = mapper.readValue(payload, IngestionEventDto.class);
-
-            TradeDto trade = mapper.readValue(ingestionEvent.getPayloadBytes(), TradeDto.class);
-
-            if (idempotencyService.isAlreadyProcessed(trade.getTradeId())) {
-                logger.info("Ignoring duplicate trade: " + trade.getTradeId());
-                return;
-            }
-
-            logger.info("Delegating trade " + trade.getTradeId() + " to processor");
-
-            ingestionProcessor.processInfo(ingestionEvent, trade);
-
+            ingestionProcessor.processInfo(ingestionEvent);
         } catch (Exception ex) {
             logger.severe("Error in IngestionListener.onMessage: " + ex.getMessage());
             ex.printStackTrace();

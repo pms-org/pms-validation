@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.pms.validation.enums.Sector;
 import com.pms.validation.enums.TradeSide;
 
 import jakarta.persistence.Column;
@@ -34,6 +33,10 @@ public class ValidationOutboxEntity {
     @Column(name = "validation_outbox_id")
     private Long validationOutboxId;
 
+    // @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "event_id")
+    private UUID eventId;
+
     @Column(name = "trade_id")
     private UUID tradeId;
 
@@ -51,13 +54,19 @@ public class ValidationOutboxEntity {
     private BigDecimal pricePerStock;
 
     @Column(name = "quantity")
-    private long quantity;
+    private Long quantity;
 
     @Column(name = "timestamp")
-    private LocalDateTime timestamp;
+    private LocalDateTime tradeTimestamp;
 
-    @Column(name = "status")
-    private String status;
+    @Column(name = "sent_status")
+    private String sentStatus;
+
+    @Column(name = "validation_status")
+    private String validationStatus;
+
+    @Column(name = "validation_errors")
+    private String validationErrors;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
