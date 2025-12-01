@@ -34,6 +34,7 @@ public class ValidationOutboxService {
         outbox.setCreatedAt(LocalDateTime.now());
         outbox.setUpdatedAt(LocalDateTime.now());
 
+        System.out.println("Saving ValidationOutbox: " + outbox);
         return repository.save(outbox);
     }
 

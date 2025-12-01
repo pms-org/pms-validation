@@ -13,7 +13,8 @@ import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
-import com.pms.validation.entity.ValidationOutboxEntity;
+import com.pms.validation.dto.OutboxEventDto;
+import com.pms.validation.entity.ValidationOutbox;
 
 @Configuration
 public class KafkaConfig {
@@ -34,26 +35,37 @@ public class KafkaConfig {
                                 .build();
         }
 
-        @Bean
-        public ConcurrentKafkaListenerContainerFactory<String, ValidationOutboxEntity> kafkaListenerContainerFactory() {
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
 
-                Map<String, Object> props = new HashMap<>();
-                props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-                props.put(ConsumerConfig.GROUP_ID_CONFIG, "validation-consumer-group");
-                props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-                props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "validation-consumer-group");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
 
-                JsonDeserializer<ValidationOutboxEntity> deserializer = new JsonDeserializer<>(
-                                ValidationOutboxEntity.class);
-                deserializer.addTrustedPackages("*");
+        
+        // JsonDeserializer<OutboxEventDto> deserializer =
+        //     new JsonDeserializer<>(OutboxEventDto.class);
 
-                DefaultKafkaConsumerFactory<String, ValidationOutboxEntity> consumerFactory = new DefaultKafkaConsumerFactory<>(
-                                props,
-                                new StringDeserializer(),
-                                deserializer);
+        // DefaultKafkaConsumerFactory<String, OutboxEventDto> consumerFactory =
+        //     new DefaultKafkaConsumerFactory<>(
+        //             props,
+        //             new StringDeserializer(),
+        //             deserializer
+        //     );
 
-                ConcurrentKafkaListenerContainerFactory<String, ValidationOutboxEntity> factory = new ConcurrentKafkaListenerContainerFactory<>();
-                factory.setConsumerFactory(consumerFactory);
-                return factory;
-        }
+        // ConcurrentKafkaListenerContainerFactory<String, OutboxEventDto> factory =
+        //     new ConcurrentKafkaListenerContainerFactory<>();
+        // factory.setConsumerFactory(consumerFactory);
+        // return factory;
+
+        DefaultKafkaConsumerFactory<String, String> consumerFactory =
+            new DefaultKafkaConsumerFactory<>(props);
+
+        ConcurrentKafkaListenerContainerFactory<String, String> factory =
+            new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory);
+        return factory;
+    }
 }
