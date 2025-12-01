@@ -9,7 +9,7 @@ import com.pms.validation.enums.Sector;
 import java.util.List;
 
 @Repository
-public interface StockDao extends JpaRepository<StockEntity, Long> {
+public interface StockRepository extends JpaRepository<StockEntity, Long> {
 
     public Optional<StockEntity> findBySymbol(String symbol);
 
