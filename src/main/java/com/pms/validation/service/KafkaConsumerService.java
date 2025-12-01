@@ -26,6 +26,9 @@ public class KafkaConsumerService {
     private ValidationOutboxService outboxService;
 
     @Autowired
+    private IdempotencyService idempotencyService;
+
+    @Autowired
     private KafkaTemplate<String, ValidationEventDto> kafkaTemplate;
 
     @Autowired
@@ -37,9 +40,21 @@ public class KafkaConsumerService {
             @Header(KafkaHeaders.OFFSET) Long offset) {
         try {
             OutboxEventDto ingestionEvent = mapper.readValue(payload, OutboxEventDto.class);
+
+            if (idempotencyService.isAlreadyProcessed(ingestionEvent.getEventId())) {
+                logger.info("Ignoring duplicate event: " + ingestionEvent.getEventId());
+                return;
+            }
+
             TradeDto trade = mapper.readValue(ingestionEvent.getPayloadBytes(), TradeDto.class);
 
             logger.info("Processing trade from ingestion: " + trade.getTradeId());
+
+            if (!idempotencyService.markAsProcessed(ingestionEvent.getEventId(), "ingestion-topic")) {
+                logger.warning(
+                        "Failed to mark event as processed (possible duplicate): " + ingestionEvent.getEventId());
+                return;
+            }
 
             ValidationResult result = validationService.validateOutbox(ingestionEvent);
 
