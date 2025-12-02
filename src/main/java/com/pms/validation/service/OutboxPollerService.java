@@ -24,7 +24,7 @@ public class OutboxPollerService {
     @Autowired
     private KafkaProducerService kafkaProducerService;
 
-    @Scheduled(fixedDelay = 10000)
+    @Scheduled(fixedDelay = 2000)
     @Transactional
     public void pollAndPublish() {
 
