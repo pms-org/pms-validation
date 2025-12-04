@@ -8,14 +8,14 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 import com.google.protobuf.Timestamp;
-import com.pms.validation.entity.ValidationOutboxEntity;
+import com.pms.validation.entity.InvalidTradeEntity;
 import com.pms.validation.proto.TradeEventProto;
 
 @Component
-public class ProtoEntityMapper {
+public class ProtoInvalidTradeEntityMapper {
 
     // --------------------- ENTITY → PROTO ---------------------
-    public static TradeEventProto toProto(ValidationOutboxEntity entity) {
+    public static TradeEventProto toProto(InvalidTradeEntity entity) {
 
         TradeEventProto.Builder builder = TradeEventProto.newBuilder();
 
@@ -34,12 +34,12 @@ public class ProtoEntityMapper {
             builder.setSymbol(entity.getSymbol());
         }
 
-        // side enum
+        // side
         if (entity.getSide() != null) {
             builder.setSide(entity.getSide().name());
         }
 
-        // price per stock
+        // pricePerStock
         if (entity.getPricePerStock() != null) {
             builder.setPricePerStock(entity.getPricePerStock().doubleValue());
         }
@@ -59,9 +59,9 @@ public class ProtoEntityMapper {
 
 
     // --------------------- PROTO → ENTITY ---------------------
-    public static ValidationOutboxEntity toEntity(TradeEventProto proto) {
+    public static InvalidTradeEntity toEntity(TradeEventProto proto) {
 
-        return ValidationOutboxEntity.builder()
+        return InvalidTradeEntity.builder()
                 .portfolioId(proto.getPortfolioId().isEmpty() ? null : UUID.fromString(proto.getPortfolioId()))
                 .tradeId(proto.getTradeId().isEmpty() ? null : UUID.fromString(proto.getTradeId()))
                 .symbol(proto.getSymbol().isEmpty() ? null : proto.getSymbol())

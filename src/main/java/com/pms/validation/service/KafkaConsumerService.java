@@ -32,12 +32,13 @@ public class KafkaConsumerService {
             @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
             @Header(KafkaHeaders.OFFSET) Long offset) {
         try {
+            System.out.println("From Ingestion topic consumer service:");
             System.out.println("Received message from partition " + partition);
             System.out.println("Offset: " + offset);
 
             // TradeDto tradeDto = protoDTOMapper.toDto(tradeMessage);
 
-            validationCore.processInfo(tradeDto);
+            validationCore.processTrade(tradeDto);
 
         } catch (Exception ex) {
             logger.severe("Error in IngestionListener.onMessage: " + ex.getMessage());
@@ -50,16 +51,40 @@ public class KafkaConsumerService {
     groupId = "pms-core-consumer-group",
     containerFactory = "protobufKafkaListenerContainerFactory"
     )
-    public void onValidationMessage(byte[] payload,
+    public void onValidationMessage(TradeEventProto validatedTrade,
             @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
             @Header(KafkaHeaders.OFFSET) Long offset) {
         try {
+            System.out.println("From Validation topic consumer service:");
             System.out.println("Received message from partition " + partition);
             System.out.println("Offset: " + offset);
 
-            TradeEventProto validatedTrade = TradeEventProto.parseFrom(payload);
+            // TradeEventProto validatedTrade = TradeEventProto.parseFrom(payload);
 
             System.out.println("Payload: " + validatedTrade);
+        } catch (Exception ex) {
+            logger.severe("Error in ValidationListener.onMessage: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
+
+
+    @KafkaListener(
+    topics = "invalid-trade-topic",
+    groupId = "rttm-consumer-group",
+    containerFactory = "protobufKafkaListenerContainerFactory"
+    )
+    public void onInvalidTradeMessage(TradeEventProto invalidTrade,
+            @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
+            @Header(KafkaHeaders.OFFSET) Long offset) {
+        try {
+            System.out.println("From Invalid Trade topic consumer service:");
+            System.out.println("Received message from partition " + partition);
+            System.out.println("Offset: " + offset);
+
+            // TradeEventProto invalidTrade = TradeEventProto.parseFrom(payload);
+
+            System.out.println("Payload: " + invalidTrade);
         } catch (Exception ex) {
             logger.severe("Error in ValidationListener.onMessage: " + ex.getMessage());
             ex.printStackTrace();

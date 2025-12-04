@@ -3,6 +3,8 @@ package com.pms.validation.service;
 import com.pms.validation.entity.ProcessedMessage;
 import com.pms.validation.repository.ProcessedMessageRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -12,9 +14,8 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 @Service
+@Slf4j
 public class IdempotencyService {
-
-    private static final Logger logger = Logger.getLogger(IdempotencyService.class.getName());
 
     @Value("${spring.kafka.consumer.group-id}")
     private String consumerGroup;
@@ -27,10 +28,10 @@ public class IdempotencyService {
         try {
             ProcessedMessage message = new ProcessedMessage(tradeId, consumerGroup, topic);
             repository.save(message);
-            logger.info("Marked trade " + tradeId + " as processed");
+            log.info("Marked trade " + tradeId + " as processed");
             return true;
         } catch (Exception ex) {
-            logger.warning("Trade " + tradeId + " already processed or constraint violation: " + ex.getMessage());
+            log.warn("Trade " + tradeId + " already processed or constraint violation: " + ex.getMessage());
             return false;
         }
     }

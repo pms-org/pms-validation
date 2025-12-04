@@ -3,23 +3,25 @@ package com.pms.validation.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import com.pms.validation.entity.InvalidTradeEntity;
 import com.pms.validation.entity.ValidationOutboxEntity;
-import com.pms.validation.repository.ValidationOutboxRepository;
+import com.pms.validation.repository.InvalidTradeRepository;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class OutboxPollerService {
+public class InvalidTradePollerService {
 
     @Autowired
-    private ValidationOutboxRepository outboxRepo;
+    private InvalidTradeRepository invalidOutboxRepo;
 
     @Autowired
     private KafkaProducerService kafkaProducerService;
@@ -28,30 +30,30 @@ public class OutboxPollerService {
     @Transactional
     public void pollAndPublish() {
 
-        List<ValidationOutboxEntity> pending = outboxRepo
-                .fetchPending(Sort.by(Sort.Direction.ASC, "validationOutboxId"));
+        List<InvalidTradeEntity> pending = invalidOutboxRepo
+                .fetchPending(Sort.by(Sort.Direction.ASC, "invalidTradeId"));
 
         if (pending.isEmpty())
             return;
 
-        for (ValidationOutboxEntity outbox : pending) {
+        for (InvalidTradeEntity outbox : pending) {
             try {
-                log.info("Publishing outbox record {} for trade {}",
-                        outbox.getValidationOutboxId(), outbox.getTradeId());
+                log.info("Publishing invalid trade outbox record {} for trade {}",
+                        outbox.getInvalidTradeId() , outbox.getTradeId());
 
-                kafkaProducerService.sendValidationEvent(outbox);
+                kafkaProducerService.sendInvalidTradeEvent(outbox);
 
                 outbox.setSentStatus("SENT");
                 outbox.setUpdatedAt(LocalDateTime.now());
-                outboxRepo.save(outbox);
+                invalidOutboxRepo.save(outbox);
 
             } catch (Exception ex) {
                 log.error("Failed publishing outbox {}: {}",
-                        outbox.getValidationOutboxId(), ex.getMessage());
+                        outbox.getInvalidTradeId(), ex.getMessage());
 
                 outbox.setSentStatus("FAILED");
                 outbox.setUpdatedAt(LocalDateTime.now());
-                outboxRepo.save(outbox);
+                invalidOutboxRepo.save(outbox);
             }
         }
     }

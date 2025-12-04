@@ -20,12 +20,17 @@ rule "Trade - required fields"
     when
         $t : TradeDto()
         $r : ValidationResultDto()
-        eval($t != null)
     then
         if ($t.getTradeId() == null) addError($r, "tradeId is required");
         if ($t.getPortfolioId() == null) addError($r, "portfolioId is required");
         if (isBlank($t.getSymbol())) addError($r, "symbol is required");
+
+        if ($t.getSide() == null) addError($r, "side is required");
+        if ($t.getPricePerStock() == null) addError($r, "pricePerStock is required");
+        if ($t.getQuantity() == null) addError($r, "quantity is required");
+        if ($t.getTimestamp() == null) addError($r, "timestamp is required");
 end
+
 
 rule "Trade - price must be positive"
     when

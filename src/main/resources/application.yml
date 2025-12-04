@@ -18,7 +18,6 @@ spring:
       hibernate:
         format_sql: true    
         dialect: org.hibernate.dialect.PostgreSQLDialect
-    
 
   docker:
     compose:
@@ -35,7 +34,11 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
-      group-id: validation-consumer-group
+      group-id: pms-core-consumer-group
 
 server:
   port: 8080
+
+spring.autoconfigure.exclude:
+  - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+  - org.springframework.boot.docker.compose.DockerComposeAutoConfiguration

@@ -14,30 +14,57 @@ import com.pms.validation.proto.TradeEventProto;
 
 @Component
 public class ProtoDTOMapper {
+
     // ---------- PROTO -> DTO ----------
     public static TradeDto toDto(TradeEventProto proto) {
+
         return TradeDto.builder()
-                .tradeId(UUID.fromString(proto.getTradeId()))
-                .portfolioId(UUID.fromString(proto.getPortfolioId()))
-                .symbol(proto.getSymbol())
-                .side(TradeSide.valueOf(proto.getSide()))
-                .pricePerStock(java.math.BigDecimal.valueOf(proto.getPricePerStock()))
-                .quantity(proto.getQuantity())
-                .timestamp(convertTimestamp(proto.getTimestamp()))
+                .tradeId(proto.getTradeId().isEmpty() ? null : UUID.fromString(proto.getTradeId()))
+                .portfolioId(proto.getPortfolioId().isEmpty() ? null : UUID.fromString(proto.getPortfolioId()))
+                .symbol(proto.getSymbol().isEmpty() ? null : proto.getSymbol())
+                .side(proto.getSide().isEmpty() ? null : TradeSide.valueOf(proto.getSide()))
+                .pricePerStock(proto.getPricePerStock() == 0 ? null :
+                        java.math.BigDecimal.valueOf(proto.getPricePerStock()))
+                .quantity(proto.getQuantity() == 0 ? null : proto.getQuantity())
+                .timestamp(proto.hasTimestamp() ? convertTimestamp(proto.getTimestamp()) : null)
                 .build();
     }
 
+    
     // ---------- DTO -> PROTO ----------
     public static TradeEventProto toProto(TradeDto dto) {
-        return TradeEventProto.newBuilder()
-                .setTradeId(dto.getTradeId().toString())
-                .setPortfolioId(dto.getPortfolioId().toString())
-                .setSymbol(dto.getSymbol())
-                .setSide(dto.getSide().name())
-                .setPricePerStock(dto.getPricePerStock().doubleValue())
-                .setQuantity(dto.getQuantity())
-                .setTimestamp(convertLocalDateTime(dto.getTimestamp()))
-                .build();
+
+        TradeEventProto.Builder builder = TradeEventProto.newBuilder();
+
+        if (dto.getTradeId() != null) {
+            builder.setTradeId(dto.getTradeId().toString());
+        }
+
+        if (dto.getPortfolioId() != null) {
+            builder.setPortfolioId(dto.getPortfolioId().toString());
+        }
+
+        if (dto.getSymbol() != null) {
+            builder.setSymbol(dto.getSymbol());
+        }
+
+        if (dto.getSide() != null) {
+            builder.setSide(dto.getSide().name());
+        }
+
+        if (dto.getPricePerStock() != null) {
+            builder.setPricePerStock(dto.getPricePerStock().doubleValue());
+        }
+
+        if (dto.getQuantity() != null) {
+            builder.setQuantity(dto.getQuantity());
+        }
+
+        if (dto.getTimestamp() != null) {
+            builder.setTimestamp(convertLocalDateTime(dto.getTimestamp()));
+        }
+
+        return builder.build();
     }
 
     // ---------- Converters ----------
