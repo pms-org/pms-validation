@@ -9,7 +9,6 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 
 import com.pms.validation.dto.TradeDto;
-import com.pms.validation.mapper.ProtoDTOMapper;
 import com.pms.validation.proto.TradeEventProto;
 
 @Service
@@ -20,14 +19,7 @@ public class KafkaConsumerService {
     @Autowired
     private ValidationCore validationCore;
 
-    @Autowired
-    private ProtoDTOMapper protoDTOMapper;
-
-    @KafkaListener(
-    topics = "ingestion-topic",
-    groupId = "${spring.kafka.consumer.group-id}",
-    containerFactory = "jsonKafkaListenerContainerFactory"
-    )
+    @KafkaListener(topics = "ingestion-topic", groupId = "${spring.kafka.consumer.group-id}", containerFactory = "jsonKafkaListenerContainerFactory")
     public void onIngestionMessage(TradeDto tradeDto,
             @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
             @Header(KafkaHeaders.OFFSET) Long offset) {
@@ -46,11 +38,7 @@ public class KafkaConsumerService {
         }
     }
 
-    @KafkaListener(
-    topics = "validation-topic",
-    groupId = "pms-core-consumer-group",
-    containerFactory = "protobufKafkaListenerContainerFactory"
-    )
+    @KafkaListener(topics = "validation-topic", groupId = "pms-core-consumer-group", containerFactory = "protobufKafkaListenerContainerFactory")
     public void onValidationMessage(TradeEventProto validatedTrade,
             @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
             @Header(KafkaHeaders.OFFSET) Long offset) {
@@ -68,12 +56,7 @@ public class KafkaConsumerService {
         }
     }
 
-
-    @KafkaListener(
-    topics = "invalid-trade-topic",
-    groupId = "rttm-consumer-group",
-    containerFactory = "protobufKafkaListenerContainerFactory"
-    )
+    @KafkaListener(topics = "invalid-trade-topic", groupId = "rttm-consumer-group", containerFactory = "protobufKafkaListenerContainerFactory")
     public void onInvalidTradeMessage(TradeEventProto invalidTrade,
             @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
             @Header(KafkaHeaders.OFFSET) Long offset) {

@@ -11,16 +11,10 @@ import com.pms.validation.mapper.ProtoInvalidTradeEntityMapper;
 import com.pms.validation.proto.TradeEventProto;
 
 @Service
-public class KafkaProducerService{
+public class KafkaProducerService {
 
     @Autowired
     private KafkaTemplate<String, TradeEventProto> kafkaTemplate;
-
-    @Autowired
-    private ProtoEntityMapper protoEntityMapper;
-
-    @Autowired
-    private ProtoInvalidTradeEntityMapper protoInvalidTradeEntityMapper;
 
     private static final String validationTopic = "validation-topic";
 
@@ -28,7 +22,7 @@ public class KafkaProducerService{
 
     public void sendValidationEvent(ValidationOutboxEntity event) throws Exception {
 
-        TradeEventProto protoEvent = protoEntityMapper.toProto(event);
+        TradeEventProto protoEvent = ProtoEntityMapper.toProto(event);
 
         // byte[] eventBytes = protoEvent.toByteArray();
 
@@ -37,7 +31,7 @@ public class KafkaProducerService{
 
     public void sendInvalidTradeEvent(InvalidTradeEntity event) throws Exception {
 
-        TradeEventProto protoEvent = protoInvalidTradeEntityMapper.toProto(event);
+        TradeEventProto protoEvent = ProtoInvalidTradeEntityMapper.toProto(event);
 
         // byte[] eventBytes = protoEvent.toByteArray();
 

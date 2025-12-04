@@ -1,14 +1,12 @@
 package com.pms.validation.service;
 
 import java.util.UUID;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pms.validation.dto.TradeDto;
 import com.pms.validation.dto.ValidationResultDto;
 import com.pms.validation.entity.InvalidTradeEntity;
@@ -92,7 +90,6 @@ public class ValidationCore {
         return true;
     }
 
-    
     public void processTrade(TradeDto trade) {
         try {
 

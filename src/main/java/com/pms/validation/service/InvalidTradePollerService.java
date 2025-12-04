@@ -3,14 +3,12 @@ package com.pms.validation.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.pms.validation.entity.InvalidTradeEntity;
-import com.pms.validation.entity.ValidationOutboxEntity;
 import com.pms.validation.repository.InvalidTradeRepository;
 
 import jakarta.transaction.Transactional;
@@ -26,7 +24,7 @@ public class InvalidTradePollerService {
     @Autowired
     private KafkaProducerService kafkaProducerService;
 
-    @Scheduled(fixedDelay = 10000)
+    @Scheduled(fixedDelay = 2000)
     @Transactional
     public void pollAndPublish() {
 
@@ -39,7 +37,7 @@ public class InvalidTradePollerService {
         for (InvalidTradeEntity outbox : pending) {
             try {
                 log.info("Publishing invalid trade outbox record {} for trade {}",
-                        outbox.getInvalidTradeId() , outbox.getTradeId());
+                        outbox.getInvalidTradeId(), outbox.getTradeId());
 
                 kafkaProducerService.sendInvalidTradeEvent(outbox);
 
