@@ -23,15 +23,15 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class KafkaConsumerService {
-    
+
     private static final Logger logger = Logger.getLogger(KafkaConsumerService.class.getName());
 
     @Autowired
     private TradeProcessingService tradeProcessingService;
 
     @RetryableTopic(
-            attempts = "3",
-            include = { RetryableException.class },
+            attempts = "5",
+            include = {RetryableException.class},
             backoff = @Backoff(delay = 2000, multiplier = 2)
     )
     @KafkaListener(topics = "ingestion-topic", groupId = "${spring.kafka.consumer.group-id}", containerFactory = "protobufKafkaListenerContainerFactory")
@@ -39,11 +39,9 @@ public class KafkaConsumerService {
             @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
             @Header(KafkaHeaders.OFFSET) Long offset) {
 
-            TradeDto tradeDto = ProtoDTOMapper.toDto(tradeMessage);
+        TradeDto tradeDto = ProtoDTOMapper.toDto(tradeMessage);
 
-        // TradeDto tradeDto = protoDTOMapper.toDto(tradeMessage);
-
-            tradeProcessingService.processTrade(tradeDto);
+        tradeProcessingService.processTrade(tradeDto);
 
         log.info("Successfully processed trade {} from ingestion topic", tradeDto.getTradeId());
 
