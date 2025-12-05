@@ -26,7 +26,6 @@ public class InvalidTradePollerService {
     private KafkaProducerService kafkaProducerService;
 
     @Scheduled(fixedDelay = 2000)
-    @Transactional
     public void pollAndPublish() {
 
         List<InvalidTradeEntity> pending = invalidOutboxRepo

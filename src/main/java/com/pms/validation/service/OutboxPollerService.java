@@ -26,7 +26,6 @@ public class OutboxPollerService {
     private KafkaProducerService kafkaProducerService;
 
     @Scheduled(fixedDelay = 2000)
-    @Transactional
     public void pollAndPublish() {
 
         List<ValidationOutboxEntity> pending = outboxRepo

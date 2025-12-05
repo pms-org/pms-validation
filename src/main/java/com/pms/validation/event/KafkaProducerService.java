@@ -1,11 +1,14 @@
 package com.pms.validation.event;
 
+import org.kie.api.prototype.PrototypeEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import com.pms.validation.dto.TradeDto;
 import com.pms.validation.entity.InvalidTradeEntity;
 import com.pms.validation.entity.ValidationOutboxEntity;
+import com.pms.validation.mapper.ProtoDTOMapper;
 import com.pms.validation.mapper.ProtoEntityMapper;
 import com.pms.validation.mapper.ProtoInvalidTradeEntityMapper;
 import com.pms.validation.proto.TradeEventProto;
@@ -19,6 +22,13 @@ public class KafkaProducerService {
     private static final String validationTopic = "validation-topic";
 
     private static final String invalidTradeTopic = "invalid-trade-topic";
+
+    public void sendIngestionEvent(TradeDto tradeDto) throws Exception {
+
+        TradeEventProto protoEvent = ProtoDTOMapper.toProto(tradeDto);
+
+        kafkaTemplate.send("ingestion-topic", protoEvent.getPortfolioId(), protoEvent).get();
+    }
 
     public void sendValidationEvent(ValidationOutboxEntity event) throws Exception {
 

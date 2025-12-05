@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 
 import com.pms.validation.dto.TradeDto;
 import com.pms.validation.exception.RetryableException;
+import com.pms.validation.mapper.ProtoDTOMapper;
 import com.pms.validation.proto.TradeEventProto;
+import com.pms.validation.service.TradeProcessingService;
 import com.pms.validation.service.ValidationCore;
 
 import lombok.extern.slf4j.Slf4j;
@@ -21,28 +23,27 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class KafkaConsumerService {
-
+    
     private static final Logger logger = Logger.getLogger(KafkaConsumerService.class.getName());
 
     @Autowired
-    private ValidationCore validationCore;
+    private TradeProcessingService tradeProcessingService;
 
-    @RetryableTopic(attempts = "5", include = {
-            RetryableException.class }, backoff = @Backoff(delay = 2000, multiplier = 2))
-    @KafkaListener(topics = "ingestion-topic", groupId = "${spring.kafka.consumer.group-id}", containerFactory = "jsonKafkaListenerContainerFactory")
-    public void onIngestionMessage(TradeDto tradeDto,
+    @RetryableTopic(
+            attempts = "3",
+            include = { RetryableException.class },
+            backoff = @Backoff(delay = 2000, multiplier = 2)
+    )
+    @KafkaListener(topics = "ingestion-topic", groupId = "${spring.kafka.consumer.group-id}", containerFactory = "protobufKafkaListenerContainerFactory")
+    public void onIngestionMessage(TradeEventProto tradeMessage,
             @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
             @Header(KafkaHeaders.OFFSET) Long offset) {
 
-        System.out.println("From Ingestion topic consumer service:");
-        System.out.println("Received message from partition " + partition);
-        System.out.println("Offset: " + offset);
+            TradeDto tradeDto = ProtoDTOMapper.toDto(tradeMessage);
 
         // TradeDto tradeDto = protoDTOMapper.toDto(tradeMessage);
 
-        log.info("Processing trade {} from ingestion topic", tradeDto.getTradeId());
-
-        validationCore.processTrade(tradeDto);
+            tradeProcessingService.processTrade(tradeDto);
 
         log.info("Successfully processed trade {} from ingestion topic", tradeDto.getTradeId());
 
@@ -57,7 +58,6 @@ public class KafkaConsumerService {
             System.out.println("Received message from partition " + partition);
             System.out.println("Offset: " + offset);
 
-            // TradeEventProto validatedTrade = TradeEventProto.parseFrom(payload);
             System.out.println("Payload: " + validatedTrade);
         } catch (Exception ex) {
             logger.severe("Error in ValidationListener.onMessage: " + ex.getMessage());
@@ -74,7 +74,6 @@ public class KafkaConsumerService {
             System.out.println("Received message from partition " + partition);
             System.out.println("Offset: " + offset);
 
-            // TradeEventProto invalidTrade = TradeEventProto.parseFrom(payload);
             System.out.println("Payload: " + invalidTrade);
         } catch (Exception ex) {
             logger.severe("Error in ValidationListener.onMessage: " + ex.getMessage());
