@@ -34,44 +34,44 @@ public class ValidationOutboxEntity {
     private Long validationOutboxId;
 
     // @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "event_id")
+    @Column(name = "event_id", nullable = false)
     private UUID eventId;
 
-    @Column(name = "trade_id")
+    @Column(name = "trade_id", nullable = false)
     private UUID tradeId;
 
-    @Column(name = "portfolio_id")
+    @Column(name = "portfolio_id", nullable = false)
     private UUID portfolioId;
 
-    @Column(name = "symbol")
+    @Column(name = "symbol", nullable = false)
     private String symbol;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "side")
+    @Column(name = "side", nullable = false)
     private TradeSide side;
 
-    @Column(name = "price_per_stock")
+    @Column(name = "price_per_stock", nullable = false)
     private BigDecimal pricePerStock;
 
-    @Column(name = "quantity")
+    @Column(name = "quantity", nullable = false)
     private Long quantity;
 
-    @Column(name = "timestamp")
+    @Column(name = "trade_timestamp", nullable = false)
     private LocalDateTime tradeTimestamp;
 
-    @Column(name = "sent_status")
+    @Column(name = "sent_status", nullable = false)
     private String sentStatus;
 
-    @Column(name = "validation_status")
+    @Column(name = "validation_status", nullable = false)
     private String validationStatus;
 
-    @Column(name = "validation_errors")
+    @Column(name = "validation_errors", nullable = true)
     private String validationErrors; // Semi colon separated errors
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     @PrePersist

@@ -26,20 +26,20 @@ import lombok.NoArgsConstructor;
 public class StockEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "stock_id")
+    @Column(name = "stock_id", nullable = false)
     private Long stockId;
 
-    @Column(name = "symbol")
+    @Column(name = "symbol", nullable = false)
     private String symbol;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "sector_name")
+    @Column(name = "sector_name", nullable = false)
     private Sector sectorName;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     @PrePersist

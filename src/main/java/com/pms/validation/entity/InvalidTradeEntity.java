@@ -30,7 +30,7 @@ import lombok.NoArgsConstructor;
 public class InvalidTradeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "invalid_trade_id")
+    @Column(name = "invalid_trade_id", nullable = false)
     private Long invalidTradeId;
 
     // @GeneratedValue(strategy = GenerationType.UUID)
