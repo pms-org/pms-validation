@@ -1,6 +1,5 @@
 package com.pms.validation.event;
 
-import org.kie.api.prototype.PrototypeEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -34,16 +33,12 @@ public class KafkaProducerService {
 
         TradeEventProto protoEvent = ProtoEntityMapper.toProto(event);
 
-        // byte[] eventBytes = protoEvent.toByteArray();
-
         kafkaTemplate.send(validationTopic, protoEvent.getPortfolioId(), protoEvent).get();
     }
 
     public void sendInvalidTradeEvent(InvalidTradeEntity event) throws Exception {
 
         TradeEventProto protoEvent = ProtoInvalidTradeEntityMapper.toProto(event);
-
-        // byte[] eventBytes = protoEvent.toByteArray();
 
         kafkaTemplate.send(invalidTradeTopic, protoEvent.getPortfolioId(), protoEvent).get();
     }

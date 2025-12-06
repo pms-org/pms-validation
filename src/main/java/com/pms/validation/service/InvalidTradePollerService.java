@@ -1,18 +1,17 @@
 package com.pms.validation.service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.pms.validation.entity.InvalidTradeEntity;
 import com.pms.validation.event.KafkaProducerService;
 import com.pms.validation.repository.InvalidTradeRepository;
 
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -23,35 +22,26 @@ public class InvalidTradePollerService {
     private InvalidTradeRepository invalidOutboxRepo;
 
     @Autowired
-    private KafkaProducerService kafkaProducerService;
+    private OutboxProcessorService outboxProcessorService;
 
     @Scheduled(fixedDelay = 2000)
     public void pollAndPublish() {
 
         List<InvalidTradeEntity> pending = invalidOutboxRepo
-                .fetchPending(Sort.by(Sort.Direction.ASC, "invalidTradeId"));
+                .findBySentStatusOrderByInvalidTradeOutboxIdAsc("PENDING",
+                       PageRequest.of(0, 50));
 
         if (pending.isEmpty())
             return;
 
         for (InvalidTradeEntity outbox : pending) {
             try {
-                log.info("Publishing invalid trade outbox record {} for trade {}",
-                        outbox.getInvalidTradeId(), outbox.getTradeId());
-
-                kafkaProducerService.sendInvalidTradeEvent(outbox);
-
-                outbox.setSentStatus("SENT");
-                outbox.setUpdatedAt(LocalDateTime.now());
-                invalidOutboxRepo.save(outbox);
+                
+                outboxProcessorService.processInvalidOutbox(outbox.getInvalidTradeOutboxId());
 
             } catch (Exception ex) {
                 log.error("Failed publishing outbox {}: {}",
-                        outbox.getInvalidTradeId(), ex.getMessage());
-
-                outbox.setSentStatus("FAILED");
-                outbox.setUpdatedAt(LocalDateTime.now());
-                invalidOutboxRepo.save(outbox);
+                        outbox.getInvalidTradeOutboxId(), ex.getMessage());
             }
         }
     }

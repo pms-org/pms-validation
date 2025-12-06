@@ -1,7 +1,7 @@
 
 -- 1. invalid_trades
 CREATE TABLE invalid_trades (
-    invalid_trade_id BIGSERIAL PRIMARY KEY,
+    invalid_trade_outbox_id BIGSERIAL PRIMARY KEY,
 
     event_id UUID,
     trade_id UUID,
@@ -14,7 +14,7 @@ CREATE TABLE invalid_trades (
     price_per_stock NUMERIC(19, 4),
     quantity BIGINT,
 
-    timestamp TIMESTAMP,
+    tradeTimestamp TIMESTAMP,
 
     sent_status VARCHAR(255),
     validation_status VARCHAR(255),
