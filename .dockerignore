@@ -35,3 +35,6 @@ build/
 # Docker files
 docker-compose*
 Dockerfile
+.env
+
+**/env.properties
