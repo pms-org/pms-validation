@@ -16,11 +16,10 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
-import io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializer;
-import org.springframework.kafka.support.serializer.JsonDeserializer;
 
-import com.pms.validation.dto.TradeDto;
 import com.pms.validation.proto.TradeEventProto;
+
+import io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializer;
 
 @Configuration
 public class KafkaConfig {
@@ -54,14 +53,14 @@ public class KafkaConfig {
 
 		Map<String, Object> props = new HashMap<>();
 
-		props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+		props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,  System.getenv("KAFKA_BOOTSTRAP"));
 		props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 
 		// Protobuf serializer
 		props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
 				io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer.class);
 
-		props.put("schema.registry.url", "http://localhost:8081");
+		props.put("schema.registry.url", System.getenv("SCHEMA_REGISTRY_URL"));
 
 		// Retry 5 times
 		props.put(ProducerConfig.RETRIES_CONFIG, 5);
@@ -91,7 +90,7 @@ public class KafkaConfig {
 	public ConcurrentKafkaListenerContainerFactory<String, TradeEventProto> protobufKafkaListenerContainerFactory() {
 
         Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, System.getenv("KAFKA_BOOTSTRAP"));
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "validation-consumer-group");
 
 		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
@@ -101,7 +100,7 @@ public class KafkaConfig {
 				KafkaProtobufDeserializer.class);
 
 		// REQUIRED
-		props.put("schema.registry.url", "http://localhost:8081");
+		props.put("schema.registry.url", System.getenv("SCHEMA_REGISTRY_URL"));
 
 		// IMPORTANT: Tell Kafka which Protobuf type to convert the bytes into
 		props.put("specific.protobuf.value.type",

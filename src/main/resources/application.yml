@@ -30,7 +30,7 @@ spring:
     type: redis
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP}
     consumer:
       group-id: validation-consumer-group
 
