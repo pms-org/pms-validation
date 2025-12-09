@@ -53,9 +53,7 @@ services:
       PORT: 9021
 
   validation-service:
-    build:
-      context: ..       
-      dockerfile: docker/Dockerfile
+    image: jaaswanth07/validation-service:latest 
     container_name: validation-service
     env_file:
       - ../.env
