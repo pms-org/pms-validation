@@ -56,7 +56,7 @@ services:
     image: jaaswanth07/validation-service:latest 
     container_name: validation-service
     env_file:
-      - ../.env
+      - .env
     ports:
       - "8085:8080"
     depends_on:

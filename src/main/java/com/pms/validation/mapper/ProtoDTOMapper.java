@@ -23,14 +23,13 @@ public class ProtoDTOMapper {
                 .portfolioId(proto.getPortfolioId().isEmpty() ? null : UUID.fromString(proto.getPortfolioId()))
                 .symbol(proto.getSymbol().isEmpty() ? null : proto.getSymbol())
                 .side(proto.getSide().isEmpty() ? null : TradeSide.valueOf(proto.getSide()))
-                .pricePerStock(proto.getPricePerStock() == 0 ? null :
-                        java.math.BigDecimal.valueOf(proto.getPricePerStock()))
+                .pricePerStock(
+                        proto.getPricePerStock() == 0 ? null : java.math.BigDecimal.valueOf(proto.getPricePerStock()))
                 .quantity(proto.getQuantity() == 0 ? null : proto.getQuantity())
                 .timestamp(proto.hasTimestamp() ? convertTimestamp(proto.getTimestamp()) : null)
                 .build();
     }
 
-    
     // ---------- DTO -> PROTO ----------
     public static TradeEventProto toProto(TradeDto dto) {
 
@@ -67,12 +66,10 @@ public class ProtoDTOMapper {
         return builder.build();
     }
 
-    // ---------- Converters ----------
     private static LocalDateTime convertTimestamp(Timestamp ts) {
         return LocalDateTime.ofInstant(
                 Instant.ofEpochSecond(ts.getSeconds(), ts.getNanos()),
-                ZoneId.systemDefault()
-        );
+                ZoneId.systemDefault());
     }
 
     private static Timestamp convertLocalDateTime(LocalDateTime ldt) {

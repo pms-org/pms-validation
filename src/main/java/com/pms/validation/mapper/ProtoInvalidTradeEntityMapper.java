@@ -50,7 +50,6 @@ public class ProtoInvalidTradeEntityMapper {
         return builder.build();
     }
 
-
     // --------------------- PROTO → ENTITY ---------------------
     public static InvalidTradeEntity toEntity(TradeEventProto proto) {
 
@@ -58,22 +57,20 @@ public class ProtoInvalidTradeEntityMapper {
                 .portfolioId(proto.getPortfolioId().isEmpty() ? null : UUID.fromString(proto.getPortfolioId()))
                 .tradeId(proto.getTradeId().isEmpty() ? null : UUID.fromString(proto.getTradeId()))
                 .symbol(proto.getSymbol().isEmpty() ? null : proto.getSymbol())
-                .side(proto.getSide().isEmpty() ? null :
-                        Enum.valueOf(com.pms.validation.enums.TradeSide.class, proto.getSide()))
-                .pricePerStock(proto.getPricePerStock() == 0 ? null :
-                        java.math.BigDecimal.valueOf(proto.getPricePerStock()))
+                .side(proto.getSide().isEmpty() ? null
+                        : Enum.valueOf(com.pms.validation.enums.TradeSide.class, proto.getSide()))
+                .pricePerStock(
+                        proto.getPricePerStock() == 0 ? null : java.math.BigDecimal.valueOf(proto.getPricePerStock()))
                 .quantity(proto.getQuantity() == 0 ? null : proto.getQuantity())
                 .tradeTimestamp(proto.hasTimestamp() ? convertTimestamp(proto.getTimestamp()) : null)
                 .build();
     }
 
-
     // --------------------- Timestamp Converters ---------------------
     private static LocalDateTime convertTimestamp(Timestamp ts) {
         return LocalDateTime.ofInstant(
                 Instant.ofEpochSecond(ts.getSeconds(), ts.getNanos()),
-                ZoneId.systemDefault()
-        );
+                ZoneId.systemDefault());
     }
 
     private static Timestamp convertLocalDateTime(LocalDateTime ldt) {
