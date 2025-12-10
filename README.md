@@ -1,4 +1,4 @@
-# pms-validation — Validation Microservice
+# pms-validation — Validation Microservice of PMS
 
 This microservice validates trade events using a Drools rules engine, persists validation results to an outbox table, and publishes validation events to Kafka.
 
