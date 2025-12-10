@@ -46,7 +46,7 @@ pipeline {
         stage('Deploy to EC2') {
             steps {
                 sshagent(['ec2-ssh-key']) {
-                    withCredentials([string(credentialsId: 'pms-env-file', variable: 'ENV_FILE')]) {
+                    withCredentials([file(credentialsId: 'pms-env-file', variable: 'ENV_FILE')]) {
 
                         // Copy compose file
                         sh """
