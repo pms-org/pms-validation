@@ -46,7 +46,7 @@ pipeline {
         stage('Deploy to EC2') {
             steps {
                 sshagent(['ec2-ssh-key']) {
-                    withCredentials([string(credentialsId: 'pms-env-secrets', variable: 'ENV_CONTENT')]) {
+                    withCredentials([string(credentialsId: 'pms-env-file', variable: 'ENV_FILE')]) {
 
                         // Copy compose file
                         sh """
@@ -55,11 +55,9 @@ pipeline {
                             ${EC2_HOST}:/home/ubuntu/docker-compose.yml
                         """
 
-                        // Create .env inside EC2 from Jenkins secret
+                        // Copy .env inside EC2 from Jenkins secret file
                         sh """
-                        ssh -o StrictHostKeyChecking=no ${EC2_HOST} '
-                            echo "${ENV_CONTENT}" > /home/ubuntu/.env
-                        '
+                        scp -o StrictHostKeyChecking=no ${ENV_FILE} ${EC2_HOST}:/home/ubuntu/.env
                         """
 
                         // Deploy containers
