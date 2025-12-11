@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "validation_outbox")
+@Table(name = "validation_validation_outbox")
 public class ValidationOutboxEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

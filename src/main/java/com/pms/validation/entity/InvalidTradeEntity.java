@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @Entity
-@Table(name = "invalid_trades")
+@Table(name = "validation_invalid_trades")
 public class InvalidTradeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

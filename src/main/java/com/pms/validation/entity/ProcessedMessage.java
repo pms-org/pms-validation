@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 
 @Entity
-@Table(name = "processed_messages", uniqueConstraints = {
+@Table(name = "invalidation_processed_messages", uniqueConstraints = {
         @UniqueConstraint(name = "uk_trade_id_consumer_group", columnNames = { "trade_id", "consumer_group" })
 })
 public class ProcessedMessage {
