@@ -1,6 +1,6 @@
 
 -- 1. invalid_trades
-CREATE TABLE invalid_trades (
+CREATE TABLE validation_invalid_trades (
     invalid_trade_outbox_id BIGSERIAL PRIMARY KEY,
 
     event_id UUID,
@@ -25,7 +25,7 @@ CREATE TABLE invalid_trades (
 );
 
 -- 2. processed_messages
-CREATE TABLE processed_messages (
+CREATE TABLE validation_processed_messages (
     id BIGSERIAL PRIMARY KEY,
 
     trade_id UUID NOT NULL,
@@ -38,7 +38,7 @@ CREATE TABLE processed_messages (
 );
 
 -- 3. stocks
-CREATE TABLE stocks (
+CREATE TABLE pms_stocks (
     stock_id BIGSERIAL PRIMARY KEY,
 
     symbol VARCHAR(255) NOT NULL,
