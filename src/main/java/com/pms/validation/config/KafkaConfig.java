@@ -8,6 +8,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -24,36 +25,48 @@ import io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializer;
 @Configuration
 public class KafkaConfig {
 
+	@Value("${app.incoming-topic}")
+	private String incomingTopic;
+
+	@Value("${app.outgoing-validated-topic}")
+	private String outgoingValidatedTopic;
+
+	@Value("${app.outgoing-invalidated-topic}")
+	private String outgoingInvalidatedTopic;
+
+	@Value("${spring.kafka.consumer.group-id}")
+	private String consumerGroupId;
+
 	@Bean
-	public NewTopic validationTopic() {
-		return TopicBuilder.name("validation-topic")
+	NewTopic validationTopic() {
+		return TopicBuilder.name(outgoingValidatedTopic)
 				.partitions(5)
 				.replicas(1)
 				.build();
 	}
 
 	@Bean
-	public NewTopic ingestionTopic() {
-		return TopicBuilder.name("ingestion-topic")
+	NewTopic incomingTopic() {
+		return TopicBuilder.name(incomingTopic)
 				.partitions(5)
 				.replicas(1)
 				.build();
 	}
 
 	@Bean
-	public NewTopic invalidTradeTopic() {
-		return TopicBuilder.name("invalid-trade-topic")
+	NewTopic invalidTradeTopic() {
+		return TopicBuilder.name(outgoingInvalidatedTopic)
 				.partitions(5)
 				.replicas(1)
 				.build();
 	}
 
 	@Bean
-	public ProducerFactory<String, TradeEventProto> producerFactory() {
+	ProducerFactory<String, TradeEventProto> producerFactory() {
 
 		Map<String, Object> props = new HashMap<>();
 
-		props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,  System.getenv("KAFKA_BOOTSTRAP"));
+		props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, System.getenv("KAFKA_BOOTSTRAP"));
 		props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 
 		// Protobuf serializer
@@ -82,16 +95,16 @@ public class KafkaConfig {
 	}
 
 	@Bean
-	public KafkaTemplate<String, TradeEventProto> kafkaTemplate() {
+	KafkaTemplate<String, TradeEventProto> kafkaTemplate() {
 		return new KafkaTemplate<>(producerFactory());
 	}
 
 	@Bean(name = "protobufKafkaListenerContainerFactory")
-	public ConcurrentKafkaListenerContainerFactory<String, TradeEventProto> protobufKafkaListenerContainerFactory() {
+	ConcurrentKafkaListenerContainerFactory<String, TradeEventProto> protobufKafkaListenerContainerFactory() {
 
-        Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, System.getenv("KAFKA_BOOTSTRAP"));
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "validation-consumer-group");
+		Map<String, Object> props = new HashMap<>();
+		props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, System.getenv("KAFKA_BOOTSTRAP"));
+		props.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupId);
 
 		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
 
@@ -116,5 +129,4 @@ public class KafkaConfig {
 		return factory;
 	}
 
-    
 }

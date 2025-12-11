@@ -1,6 +1,7 @@
 package com.pms.validation.event;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -18,9 +19,11 @@ public class KafkaProducerService {
     @Autowired
     private KafkaTemplate<String, TradeEventProto> kafkaTemplate;
 
-    private static final String validationTopic = "validation-topic";
+    @Value("${app.outgoing-validated-topic}")
+    private static final String validationTopic;
 
-    private static final String invalidTradeTopic = "invalid-trade-topic";
+    @Value("${app.outgoing-invalidated-topic}")
+    private static final String invalidTradeTopic;
 
     public void sendIngestionEvent(TradeDto tradeDto) throws Exception {
 

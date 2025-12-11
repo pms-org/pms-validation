@@ -4,6 +4,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,11 +33,14 @@ public class ValidationCore {
     @Autowired
     private InvalidTradeRepository invalidTradeRepo;
 
+    @Value("${app.incoming-topic}")
+    private String incomingTopic;
+
     // Atomic DB transaction: idempotency table insert + validate + outbox write.
     @Transactional
     public void handleTransaction(TradeDto trade) {
 
-        idempotencyService.markAsProcessed(trade.getTradeId(), "ingestion-topic");
+        idempotencyService.markAsProcessed(trade.getTradeId(), incomingTopic);
 
         ValidationResultDto result = tradeValidationService.validateTrade(trade);
 
