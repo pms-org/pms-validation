@@ -6,10 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.pms.validation.entity.InvalidTradeEntity;
-import com.pms.validation.event.KafkaProducerService;
 import com.pms.validation.repository.InvalidTradeRepository;
 
 import lombok.extern.slf4j.Slf4j;

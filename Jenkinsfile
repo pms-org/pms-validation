@@ -65,7 +65,8 @@ pipeline {
                         ssh -o StrictHostKeyChecking=no ${EC2_HOST} '
                             docker pull ${DOCKERHUB_REPO}:${IMAGE_TAG} &&
                             docker compose down &&
-                            docker compose up -d
+                            docker compose up -d &&
+                            docker ps
                         '
                         """
                     }
@@ -75,7 +76,10 @@ pipeline {
     }
 
     post {
-        success { echo "Deployment Successful" }
+        success { 
+            echo "Deployment Successful" 
+            echo "Deployed EC2 Host: ${EC2_HOST}"
+        }
         failure { echo "Deployment Failed" }
     }
 }

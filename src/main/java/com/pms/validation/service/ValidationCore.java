@@ -11,8 +11,6 @@ import com.pms.validation.dto.TradeDto;
 import com.pms.validation.dto.ValidationResultDto;
 import com.pms.validation.entity.InvalidTradeEntity;
 import com.pms.validation.entity.ValidationOutboxEntity;
-import com.pms.validation.exception.NonRetryableException;
-import com.pms.validation.exception.RetryableException;
 import com.pms.validation.repository.InvalidTradeRepository;
 import com.pms.validation.repository.ValidationOutboxRepository;
 
@@ -64,7 +62,7 @@ public class ValidationCore {
                     .build();
 
             outboxRepo.save(outbox);
-            
+
         } else {
             log.info("Trade {} is invalid: {}", trade.getTradeId(), errors);
 
