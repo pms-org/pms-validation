@@ -33,7 +33,7 @@ public class KafkaConsumerService {
 
     @RetryableTopic(attempts = "5", include = {
             RetryableException.class }, backoff = @Backoff(delay = 2000, multiplier = 2))
-    @KafkaListener(topics = "${app.incoming-topic}", groupId = "${spring.kafka.consumer.group-id}", containerFactory = "protobufKafkaListenerContainerFactory")
+    @KafkaListener(topics = "${app.incoming-trades-topic}", groupId = "${spring.kafka.consumer.group-id}", containerFactory = "protobufKafkaListenerContainerFactory")
     public void onIngestionMessage(TradeEventProto tradeMessage,
             @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
             @Header(KafkaHeaders.OFFSET) Long offset) {
@@ -46,7 +46,7 @@ public class KafkaConsumerService {
 
     }
 
-    @KafkaListener(topics = "${app.outgoing-validated-topic}", groupId = "${spring.kafka.consumer.group-id}", containerFactory = "protobufKafkaListenerContainerFactory")
+    @KafkaListener(topics = "${app.outgoing-valid-trades-topic}", groupId = "${spring.kafka.consumer.group-id}", containerFactory = "protobufKafkaListenerContainerFactory")
     public void onValidationMessage(TradeEventProto validatedTrade,
             @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
             @Header(KafkaHeaders.OFFSET) Long offset) {
@@ -62,7 +62,7 @@ public class KafkaConsumerService {
         }
     }
 
-    @KafkaListener(topics = "${app.outgoing-invalidated-topic}", groupId = "${spring.kafka.consumer.group-id}", containerFactory = "protobufKafkaListenerContainerFactory")
+    @KafkaListener(topics = "${app.outgoing-invalid-trades-topic}", groupId = "${spring.kafka.consumer.group-id}", containerFactory = "protobufKafkaListenerContainerFactory")
     public void onInvalidTradeMessage(TradeEventProto invalidTrade,
             @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
             @Header(KafkaHeaders.OFFSET) Long offset) {

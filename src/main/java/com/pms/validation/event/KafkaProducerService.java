@@ -19,30 +19,33 @@ public class KafkaProducerService {
     @Autowired
     private KafkaTemplate<String, TradeEventProto> kafkaTemplate;
 
-    @Value("${app.outgoing-validated-topic}")
-    private static final String validationTopic;
+    @Value("${app.incoming-trades-topic}")
+    private String incomingTradesTopic;
 
-    @Value("${app.outgoing-invalidated-topic}")
-    private static final String invalidTradeTopic;
+    @Value("${app.outgoing-valid-trades-topic}")
+    private String validTradesTopic;
+
+    @Value("${app.outgoing-invalid-trades-topic}")
+    private String invalidTradesTopic;
 
     public void sendIngestionEvent(TradeDto tradeDto) throws Exception {
 
         TradeEventProto protoEvent = ProtoDTOMapper.toProto(tradeDto);
 
-        kafkaTemplate.send("ingestion-topic", protoEvent.getPortfolioId(), protoEvent).get();
+        kafkaTemplate.send(incomingTradesTopic, protoEvent.getPortfolioId(), protoEvent).get();
     }
 
     public void sendValidationEvent(ValidationOutboxEntity event) throws Exception {
 
         TradeEventProto protoEvent = ProtoEntityMapper.toProto(event);
 
-        kafkaTemplate.send(validationTopic, protoEvent.getPortfolioId(), protoEvent).get();
+        kafkaTemplate.send(validTradesTopic, protoEvent.getPortfolioId(), protoEvent).get();
     }
 
     public void sendInvalidTradeEvent(InvalidTradeEntity event) throws Exception {
 
         TradeEventProto protoEvent = ProtoInvalidTradeEntityMapper.toProto(event);
 
-        kafkaTemplate.send(invalidTradeTopic, protoEvent.getPortfolioId(), protoEvent).get();
+        kafkaTemplate.send(invalidTradesTopic, protoEvent.getPortfolioId(), protoEvent).get();
     }
 }

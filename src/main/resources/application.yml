@@ -38,6 +38,6 @@ server:
   port: 8080
 
 app:
-  incoming-topic: raw-trades-topic
-  outgoing-validated-topic: validated-trades-topic
-  outgoing-invalidated-topic: invalidated-trades-topic
+  incoming-trades-topic: raw-trades-topic
+  outgoing-valid-trades-topic: valid-trades-topic
+  outgoing-invalid-trades-topic: invalid-trades-topic

@@ -8,6 +8,8 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -25,14 +27,14 @@ import io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializer;
 @Configuration
 public class KafkaConfig {
 
-	@Value("${app.incoming-topic}")
-	private String incomingTopic;
+	@Value("${app.incoming-trades-topic}")
+	private String incomingTradesTopic;
 
-	@Value("${app.outgoing-validated-topic}")
-	private String outgoingValidatedTopic;
+	@Value("${app.outgoing-valid-trades-topic}")
+	private String outgoingValidTradesTopic;
 
-	@Value("${app.outgoing-invalidated-topic}")
-	private String outgoingInvalidatedTopic;
+	@Value("${app.outgoing-invalid-trades-topic}")
+	private String outgoingInvalidTradesTopic;
 
 	@Value("${spring.kafka.consumer.group-id}")
 	private String consumerGroupId;
@@ -42,7 +44,7 @@ public class KafkaConfig {
 
 	@Bean
 	NewTopic validationTopic() {
-		return TopicBuilder.name(outgoingValidatedTopic)
+		return TopicBuilder.name(outgoingValidTradesTopic)
 				.partitions(5)
 				.replicas(1)
 				.build();
@@ -50,7 +52,7 @@ public class KafkaConfig {
 
 	@Bean
 	NewTopic incomingTopic() {
-		return TopicBuilder.name(incomingTopic)
+		return TopicBuilder.name(incomingTradesTopic)
 				.partitions(5)
 				.replicas(1)
 				.build();
@@ -58,7 +60,7 @@ public class KafkaConfig {
 
 	@Bean
 	NewTopic invalidTradeTopic() {
-		return TopicBuilder.name(outgoingInvalidatedTopic)
+		return TopicBuilder.name(outgoingInvalidTradesTopic)
 				.partitions(5)
 				.replicas(1)
 				.build();
@@ -69,7 +71,7 @@ public class KafkaConfig {
 
 		Map<String, Object> props = new HashMap<>();
 
-		props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,  System.getenv("KAFKA_BOOTSTRAP"));
+		props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,  env.getProperty("KAFKA_BOOTSTRAP"));
 		props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 
 		// Protobuf serializer
@@ -106,7 +108,7 @@ public class KafkaConfig {
 	public ConcurrentKafkaListenerContainerFactory<String, TradeEventProto> protobufKafkaListenerContainerFactory() {
 
         Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, System.getenv("KAFKA_BOOTSTRAP"));
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, env.getProperty("KAFKA_BOOTSTRAP"));
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "validation-consumer-group");
 
 		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);

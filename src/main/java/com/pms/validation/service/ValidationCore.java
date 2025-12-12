@@ -33,14 +33,14 @@ public class ValidationCore {
     @Autowired
     private InvalidTradeRepository invalidTradeRepo;
 
-    @Value("${app.incoming-topic}")
-    private String incomingTopic;
+    @Value("${app.incoming-trades-topic}")
+    private String incomingTradesTopic;
 
     // Atomic DB transaction: idempotency table insert + validate + outbox write.
     @Transactional
     public void handleTransaction(TradeDto trade) {
 
-        idempotencyService.markAsProcessed(trade.getTradeId(), incomingTopic);
+        idempotencyService.markAsProcessed(trade.getTradeId(), incomingTradesTopic);
 
         ValidationResultDto result = tradeValidationService.validateTrade(trade);
 
