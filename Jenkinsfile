@@ -56,9 +56,13 @@ pipeline {
                         """
 
                         // Copy .env inside EC2 from Jenkins secret file
-                        sh """
-                        scp -o StrictHostKeyChecking=no $ENV_FILE $EC2_HOST:/home/ubuntu/.env
-                        """
+                        sh(
+                            script: 'scp -o StrictHostKeyChecking=no "$ENV_FILE" "$EC2_HOST:/home/ubuntu/.env"',
+                            environment: [
+                                "ENV_FILE=${ENV_FILE}",
+                                "EC2_HOST=${EC2_HOST}"
+                            ]
+                        )
 
                         // Deploy containers
                         sh """
