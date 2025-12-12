@@ -1,9 +1,3 @@
-secondary:
-  datasource:
-    url: ${SECOND_DB_URL}
-    username: ${SECOND_DB_USERNAME}
-    password: ${SECOND_DB_PASSWORD}
-
 spring:
   application:
     name: validation

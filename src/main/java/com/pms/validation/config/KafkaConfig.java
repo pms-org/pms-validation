@@ -8,9 +8,9 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
@@ -36,6 +36,9 @@ public class KafkaConfig {
 
 	@Value("${spring.kafka.consumer.group-id}")
 	private String consumerGroupId;
+
+	@Autowired
+    private Environment env;
 
 	@Bean
 	NewTopic validationTopic() {
@@ -66,14 +69,14 @@ public class KafkaConfig {
 
 		Map<String, Object> props = new HashMap<>();
 
-		props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, System.getenv("KAFKA_BOOTSTRAP"));
+		props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,  System.getenv("KAFKA_BOOTSTRAP"));
 		props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 
 		// Protobuf serializer
 		props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
 				io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer.class);
 
-		props.put("schema.registry.url", System.getenv("SCHEMA_REGISTRY_URL"));
+		props.put("schema.registry.url", env.getProperty("SCHEMA_REGISTRY_URL"));
 
 		// Retry 5 times
 		props.put(ProducerConfig.RETRIES_CONFIG, 5);
@@ -100,11 +103,11 @@ public class KafkaConfig {
 	}
 
 	@Bean(name = "protobufKafkaListenerContainerFactory")
-	ConcurrentKafkaListenerContainerFactory<String, TradeEventProto> protobufKafkaListenerContainerFactory() {
+	public ConcurrentKafkaListenerContainerFactory<String, TradeEventProto> protobufKafkaListenerContainerFactory() {
 
-		Map<String, Object> props = new HashMap<>();
-		props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, System.getenv("KAFKA_BOOTSTRAP"));
-		props.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupId);
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, System.getenv("KAFKA_BOOTSTRAP"));
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "validation-consumer-group");
 
 		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
 
@@ -113,7 +116,7 @@ public class KafkaConfig {
 				KafkaProtobufDeserializer.class);
 
 		// REQUIRED
-		props.put("schema.registry.url", System.getenv("SCHEMA_REGISTRY_URL"));
+		props.put("schema.registry.url", env.getProperty("SCHEMA_REGISTRY_URL"));
 
 		// IMPORTANT: Tell Kafka which Protobuf type to convert the bytes into
 		props.put("specific.protobuf.value.type",

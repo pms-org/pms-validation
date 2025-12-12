@@ -5,6 +5,10 @@ import com.pms.validation.dto.TradeDto;
 import com.pms.validation.dto.ValidationResultDto;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+
+global List validPortfolios;
+global List validSymbols;
 
 function void addError(ValidationResultDto res, String msg) {
     if (res != null) {
@@ -29,6 +33,28 @@ rule "Trade - required fields"
         if ($t.getPricePerStock() == null) addError($r, "pricePerStock is required");
         if ($t.getQuantity() == null) addError($r, "quantity is required");
         if ($t.getTimestamp() == null) addError($r, "timestamp is required");
+end
+
+
+rule "Trade - portfolio must exist in DB"
+when
+    $t : TradeDto( portfolioId != null )
+    $r : ValidationResultDto()
+then
+    if (!validPortfolios.contains($t.getPortfolioId())) {
+        addError($r, "Invalid portfolio: " + $t.getPortfolioId());
+    }
+end
+
+
+rule "Trade - symbol must exist in DB"
+when
+    $t : TradeDto( symbol != null )
+    $r : ValidationResultDto()
+then
+    if (!validSymbols.contains($t.getSymbol())) {
+        addError($r, "Invalid symbol: " + $t.getSymbol());
+    }
 end
 
 

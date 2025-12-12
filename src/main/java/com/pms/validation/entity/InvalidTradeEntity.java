@@ -56,7 +56,7 @@ public class InvalidTradeEntity {
     @Column(name = "quantity")
     private Long quantity;
 
-    @Column(name = "timestamp")
+    @Column(name = "trade_timestamp")
     private LocalDateTime tradeTimestamp;
 
     @Column(name = "sent_status")

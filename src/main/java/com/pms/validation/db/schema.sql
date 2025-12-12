@@ -14,7 +14,7 @@ CREATE TABLE validation_invalid_trades (
     price_per_stock NUMERIC(19, 4),
     quantity BIGINT,
 
-    tradeTimestamp TIMESTAMP,
+    trade_timestamp TIMESTAMP,
 
     sent_status VARCHAR(255),
     validation_status VARCHAR(255),
