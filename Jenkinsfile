@@ -23,7 +23,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh """
-                docker build -f docker/Dockerfile -t ${DOCKERHUB_REPO}:${IMAGE_TAG} .
+                docker build -f docker/Dockerfile -t $DOCKERHUB_REPO:$IMAGE_TAG .
                 """
             }
         }
@@ -37,7 +37,7 @@ pipeline {
                 )]) {
                     sh """
                     echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                    docker push ${DOCKERHUB_REPO}:${IMAGE_TAG}
+                    docker push $DOCKERHUB_REPO:$IMAGE_TAG
                     """
                 }
             }
@@ -52,18 +52,18 @@ pipeline {
                         sh """
                         scp -o StrictHostKeyChecking=no \
                             docker/prod-docker-compose.yml \
-                            ${EC2_HOST}:/home/ubuntu/docker-compose.yml
+                            $EC2_HOST:/home/ubuntu/docker-compose.yml
                         """
 
                         // Copy .env inside EC2 from Jenkins secret file
                         sh """
-                        scp -o StrictHostKeyChecking=no ${ENV_FILE} ${EC2_HOST}:/home/ubuntu/.env
+                        scp -o StrictHostKeyChecking=no $ENV_FILE $EC2_HOST:/home/ubuntu/.env
                         """
 
                         // Deploy containers
                         sh """
-                        ssh -o StrictHostKeyChecking=no ${EC2_HOST} '
-                            docker pull ${DOCKERHUB_REPO}:${IMAGE_TAG} &&
+                        ssh -o StrictHostKeyChecking=no $EC2_HOST '
+                            docker pull $DOCKERHUB_REPO:$IMAGE_TAG &&
                             docker compose down &&
                             docker compose up -d &&
                             docker ps
@@ -78,7 +78,7 @@ pipeline {
     post {
         success { 
             echo "Deployment Successful" 
-            echo "Deployed EC2 Host: ${EC2_HOST}"
+            echo "Deployed EC2 Host: $EC2_HOST"
         }
         failure { echo "Deployment Failed" }
     }
