@@ -4,6 +4,8 @@ pipeline {
     environment {
         DOCKERHUB_REPO = "jaaswanth07/validation-service"
         IMAGE_TAG = "latest"
+        EC2_IP="3.142.131.169"
+        SERVER_URL="http://3.142.131.169:8085/swagger-ui/index.html"
         EC2_HOST = "ubuntu@3.142.131.169"
     }
 
@@ -35,10 +37,10 @@ pipeline {
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    sh """
+                    sh '''
                     echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                     docker push $DOCKERHUB_REPO:$IMAGE_TAG
-                    """
+                    '''
                 }
             }
         }
@@ -49,11 +51,11 @@ pipeline {
                     withCredentials([file(credentialsId: 'pms-env-file', variable: 'ENV_FILE')]) {
 
                         // Copy compose file
-                        sh """
+                        sh '''
                         scp -o StrictHostKeyChecking=no \
                             docker/prod-docker-compose.yml \
                             $EC2_HOST:/home/ubuntu/docker-compose.yml
-                        """
+                        '''
 
                         // Copy .env inside EC2 from Jenkins secret file
                         sh '''
@@ -61,14 +63,14 @@ pipeline {
                         '''
 
                         // Deploy containers
-                        sh """
+                        sh '''
                         ssh -o StrictHostKeyChecking=no $EC2_HOST '
                             docker pull $DOCKERHUB_REPO:$IMAGE_TAG &&
                             docker compose down &&
                             docker compose up -d &&
                             docker ps
                         '
-                        """
+                        '''
                     }
                 }
             }
