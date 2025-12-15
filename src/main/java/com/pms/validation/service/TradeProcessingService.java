@@ -14,22 +14,16 @@ import lombok.extern.slf4j.Slf4j;
 public class TradeProcessingService {
 
     @Autowired
-    private IdempotencyService idempotencyService;
-
-    @Autowired
     private ValidationCore validationCore;
 
     public void processTrade(TradeDto trade) {
+
+        log.info("Processing trade | tradeId={}", trade.getTradeId());
         try {
 
-            if (idempotencyService.isAlreadyProcessed(trade.getTradeId())) {
-                log.info("Ignoring duplicate trade: " + trade.getTradeId());
-                return;
-            }
-
-            log.info("Delegating trade " + trade.getTradeId() + " to processor");
-
             validationCore.handleTransaction(trade);
+            log.info("Trade processed successfully | tradeId={}",
+                    trade.getTradeId());
 
         } catch (NonRetryableException ex) {
             log.error("Non-retryable error in processTrade for {}: {}", trade.getTradeId(), ex.getMessage(), ex);

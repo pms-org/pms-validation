@@ -183,13 +183,8 @@
             <artifactId>commons-pool2</artifactId>
             <version>2.12.1</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/me.paulschwarz/spring-dotenv -->
-        <dependency>
-            <groupId>me.paulschwarz</groupId>
-            <artifactId>spring-dotenv</artifactId>
-            <version>4.0.0</version>
-        </dependency>
     </dependencies>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -200,8 +195,6 @@
                 <scope>import</scope>
             </dependency>
         </dependencies>
-
-
     </dependencyManagement>
 
     <build>
@@ -245,7 +238,7 @@
                 <version>0.6.1</version>
 
                 <configuration>
-                    <protocArtifact>com.google.protobuf:protoc:3.19.6:exe:${os.detected.classifier}</protocArtifact>
+                    <protocArtifact>com.google.protobuf:protoc:3.25.0:exe:${os.detected.classifier}</protocArtifact>
                 </configuration>
 
                 <executions>

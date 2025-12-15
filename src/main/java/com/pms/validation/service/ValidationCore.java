@@ -22,9 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 public class ValidationCore {
 
     @Autowired
-    private IdempotencyService idempotencyService;
-
-    @Autowired
     private TradeValidationService tradeValidationService;
 
     @Autowired
@@ -36,11 +33,9 @@ public class ValidationCore {
     @Value("${app.incoming-trades-topic}")
     private String incomingTradesTopic;
 
-    // Atomic DB transaction: idempotency table insert + validate + outbox write.
+    // Atomic DB transaction: validate + outbox write.
     @Transactional
     public void handleTransaction(TradeDto trade) {
-
-        idempotencyService.markAsProcessed(trade.getTradeId(), incomingTradesTopic);
 
         ValidationResultDto result = tradeValidationService.validateTrade(trade);
 

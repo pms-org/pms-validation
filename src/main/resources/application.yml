@@ -11,7 +11,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true    
@@ -23,8 +23,9 @@ spring:
 
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: ${REDIS_TIMEOUT:2s}
       
 
   cache:
@@ -35,6 +36,10 @@ spring:
     consumer:
       group-id: validation-consumer-group
 
+schema:
+  registry:
+    url: ${SCHEMA_REGISTRY_URL}
+
 server:
   port: 8080
 
@@ -43,3 +48,6 @@ app:
   outgoing-valid-trades-topic: valid-trades-topic
   outgoing-invalid-trades-topic: invalid-trades-topic
 
+logging:
+  level:
+    com.pms.validation: DEBUG

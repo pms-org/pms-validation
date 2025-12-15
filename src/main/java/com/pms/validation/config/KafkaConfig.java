@@ -39,8 +39,14 @@ public class KafkaConfig {
 	@Value("${spring.kafka.consumer.group-id}")
 	private String consumerGroupId;
 
+	@Value("${spring.kafka.bootstrap-servers}")
+	private String kafkaBootstrapServers;
+
+	@Value("${schema.registry.url}")
+	private String schemaRegistryUrl;
+
 	@Autowired
-    private Environment env;
+	private Environment env;
 
 	@Bean
 	NewTopic validationTopic() {
@@ -71,14 +77,14 @@ public class KafkaConfig {
 
 		Map<String, Object> props = new HashMap<>();
 
-		props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,  env.getProperty("KAFKA_BOOTSTRAP"));
+		props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrapServers);
 		props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 
 		// Protobuf serializer
 		props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
 				io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer.class);
 
-		props.put("schema.registry.url", env.getProperty("SCHEMA_REGISTRY_URL"));
+		props.put("schema.registry.url", schemaRegistryUrl);
 
 		// Retry 5 times
 		props.put(ProducerConfig.RETRIES_CONFIG, 5);
@@ -107,9 +113,9 @@ public class KafkaConfig {
 	@Bean(name = "protobufKafkaListenerContainerFactory")
 	public ConcurrentKafkaListenerContainerFactory<String, TradeEventProto> protobufKafkaListenerContainerFactory() {
 
-        Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, env.getProperty("KAFKA_BOOTSTRAP"));
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "validation-consumer-group");
+		Map<String, Object> props = new HashMap<>();
+		props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrapServers);
+		props.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupId);
 
 		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
 
@@ -118,7 +124,7 @@ public class KafkaConfig {
 				KafkaProtobufDeserializer.class);
 
 		// REQUIRED
-		props.put("schema.registry.url", env.getProperty("SCHEMA_REGISTRY_URL"));
+		props.put("schema.registry.url", schemaRegistryUrl);
 
 		// IMPORTANT: Tell Kafka which Protobuf type to convert the bytes into
 		props.put("specific.protobuf.value.type",

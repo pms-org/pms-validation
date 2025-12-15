@@ -25,8 +25,8 @@ public class InvestorDetailsEntity {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "number")
-    private Long number;
+    @Column(name = "phone_number")
+    private Long phoneNumber;
     
     @Column(name = "address")
     private String address;
