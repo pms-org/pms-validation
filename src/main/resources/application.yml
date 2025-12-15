@@ -25,6 +25,7 @@ spring:
     redis:
       host: localhost
       port: 6379
+      
 
   cache:
     type: redis
@@ -41,3 +42,4 @@ app:
   incoming-trades-topic: raw-trades-topic
   outgoing-valid-trades-topic: valid-trades-topic
   outgoing-invalid-trades-topic: invalid-trades-topic
+
