@@ -63,14 +63,14 @@ pipeline {
                         '''
 
                         // Deploy containers
-                        sh '''
-                        ssh -o StrictHostKeyChecking=no $EC2_HOST '
+                        sh """
+                        ssh -o StrictHostKeyChecking=no $EC2_HOST "
                             docker pull $DOCKERHUB_REPO:$IMAGE_TAG &&
                             docker compose down &&
                             docker compose up -d &&
                             docker ps
-                        '
-                        '''
+                        "
+                        """
                     }
                 }
             }
