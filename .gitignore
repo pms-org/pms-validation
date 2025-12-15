@@ -35,3 +35,7 @@ build/
 .env
 *env*
 *-creds.txt
+
+docker/data
+
+notes/
