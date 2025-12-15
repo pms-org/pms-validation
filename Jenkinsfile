@@ -80,7 +80,8 @@ pipeline {
     post {
         success { 
             echo "Deployment Successful" 
-            echo "Deployed EC2 Host: $EC2_HOST"
+            echo "Deployed EC2 Host: $EC2_IP"
+            echo "Deployed App URL: $SERVER_URL"
         }
         failure { echo "Deployment Failed" }
     }
