@@ -50,13 +50,6 @@ services:
       CONTROL_CENTER_CONNECT_CLUSTER: ""
       CONTROL_CENTER_REPLICATION_FACTOR: 1
       PORT: 9021
-    
-  # redis:
-  #   image: redis:latest
-  #   hostname: redis
-  #   container-name: redis
-  #   ports:
-  #     - "6379:6379"
 
   redis:
     image: "redislabs/redismod"
