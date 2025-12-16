@@ -79,38 +79,6 @@ public class KafkaConsumerService {
         }
     }
 
-    @KafkaListener(topics = "${app.outgoing-valid-trades-topic}", groupId = "${spring.kafka.consumer.group-id}", containerFactory = "protobufKafkaListenerContainerFactory")
-    public void onValidationMessage(TradeEventProto validatedTrade,
-            @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
-            @Header(KafkaHeaders.OFFSET) Long offset) {
-        try {
-            System.out.println("From Validation topic consumer service:");
-            System.out.println("Received message from partition " + partition);
-            System.out.println("Offset: " + offset);
-
-            System.out.println("Payload: " + validatedTrade);
-        } catch (Exception ex) {
-            logger.severe("Error in ValidationListener.onMessage: " + ex.getMessage());
-            ex.printStackTrace();
-        }
-    }
-
-    @KafkaListener(topics = "${app.outgoing-invalid-trades-topic}", groupId = "${spring.kafka.consumer.group-id}", containerFactory = "protobufKafkaListenerContainerFactory")
-    public void onInvalidTradeMessage(TradeEventProto invalidTrade,
-            @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
-            @Header(KafkaHeaders.OFFSET) Long offset) {
-        try {
-            System.out.println("From Invalid Trade topic consumer service:");
-            System.out.println("Received message from partition " + partition);
-            System.out.println("Offset: " + offset);
-
-            System.out.println("Payload: " + invalidTrade);
-        } catch (Exception ex) {
-            logger.severe("Error in ValidationListener.onMessage: " + ex.getMessage());
-            ex.printStackTrace();
-        }
-    }
-
     @DltHandler
     public void handleDltMessage(
             TradeEventProto dltMessage,
