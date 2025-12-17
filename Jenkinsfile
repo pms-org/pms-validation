@@ -1,6 +1,9 @@
 pipeline {
     agent any
-
+    tools {
+        jdk 'java-21'
+        maven 'maven-8.3.7'
+    }
     environment {
         DOCKERHUB_REPO = "jaaswanth07/validation-service"
         IMAGE_TAG = "latest"
