@@ -30,8 +30,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class KafkaConsumerService {
 
-    private static final Logger logger = Logger.getLogger(KafkaConsumerService.class.getName());
-
     @Autowired
     private TradeProcessingService tradeProcessingService;
 
