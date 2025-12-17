@@ -2,7 +2,7 @@ pipeline {
     agent any
     tools {
         jdk 'java-21'
-        maven 'maven-8.3.7'
+        maven 'maven-3.9.12'
     }
     environment {
         DOCKERHUB_REPO = "jaaswanth07/validation-service"
