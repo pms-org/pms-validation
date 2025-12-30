@@ -238,7 +238,11 @@
                 <version>0.6.1</version>
 
                 <configuration>
+                    <checkStaleness>true</checkStaleness>
                     <protocArtifact>com.google.protobuf:protoc:3.25.0:exe:${os.detected.classifier}</protocArtifact>
+                    <!-- <protocArtifact>com.google.protobuf:protoc:3.25.8:exe:${os.detected.classifier}</protocArtifact> -->
+                    <!-- <pluginId>grpc-java</pluginId>
+                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.78.0:exe:${os.detected.classifier}</pluginArtifact> -->
                 </configuration>
 
                 <executions>
