@@ -11,8 +11,7 @@ import org.springframework.stereotype.Service;
 import com.pms.validation.dto.TradeDto;
 import com.pms.validation.dto.ValidationResultDto;
 import com.pms.validation.repository.InvestorDetailsRepository;
-import com.pms.validation.repository.SymbolRepository;
-
+import com.pms.validation.repository.StockRepository;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -23,13 +22,13 @@ public class TradeValidationService {
 
     private final InvestorDetailsRepository investorDetailsRepository;
 
-    private final SymbolRepository symbolRepository;  
+    private final StockRepository stockRepository;
 
-
-    public TradeValidationService(ObjectPool<KieSession> kieSessionPool, InvestorDetailsRepository investorDetailsRepository, SymbolRepository symbolRepository) {
+    public TradeValidationService(ObjectPool<KieSession> kieSessionPool,
+            InvestorDetailsRepository investorDetailsRepository, StockRepository stockRepository) {
         this.kieSessionPool = kieSessionPool;
         this.investorDetailsRepository = investorDetailsRepository;
-        this.symbolRepository = symbolRepository;
+        this.stockRepository = stockRepository;
     }
 
     public ValidationResultDto validateTrade(TradeDto trade) {
@@ -42,9 +41,9 @@ public class TradeValidationService {
                     .map(investor -> investor.getPortfolioId())
                     .collect(Collectors.toList());
 
-            List<String> validSymbols = symbolRepository.findAll()
+            List<String> validSymbols = stockRepository.findAll()
                     .stream()
-                    .map(symbol -> symbol.getSymbol())
+                    .map(stock -> stock.getSymbol())
                     .collect(Collectors.toList());
 
             ValidationResultDto result = new ValidationResultDto();
