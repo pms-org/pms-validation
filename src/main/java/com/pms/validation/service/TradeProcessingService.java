@@ -20,7 +20,7 @@ public class TradeProcessingService {
 
         log.info("Processing trade | tradeId={}", trade.getTradeId());
         try {
-
+            
             validationCore.handleTransaction(trade);
             log.info("Trade processed successfully | tradeId={}",
                     trade.getTradeId());

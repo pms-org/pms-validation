@@ -32,14 +32,13 @@ public class OutboxProcessorService {
 
         ValidationOutboxEntity lockedOutbox = outboxRepo.lockByValidationOutboxId(id);
 
-        if(lockedOutbox.getSentStatus().equals("SENT"))
+        if (lockedOutbox.getSentStatus().equals("SENT"))
             return;
-        
+
         try {
 
             kafkaProducerService.sendValidationEvent(lockedOutbox);
 
-            
             lockedOutbox.setSentStatus("SENT");
             lockedOutbox.setUpdatedAt(LocalDateTime.now());
             outboxRepo.save(lockedOutbox);
@@ -57,16 +56,15 @@ public class OutboxProcessorService {
 
         InvalidTradeEntity lockedOutbox = invalidOutboxRepo.lockByInvalidTradeOutboxId(id);
 
-        if(!lockedOutbox.getSentStatus().equals("SENT")) {
+        if (!lockedOutbox.getSentStatus().equals("SENT")) {
         } else {
             return;
         }
-        
+
         try {
 
             kafkaProducerService.sendInvalidTradeEvent(lockedOutbox);
 
-            
             lockedOutbox.setSentStatus("SENT");
             lockedOutbox.setUpdatedAt(LocalDateTime.now());
             invalidOutboxRepo.save(lockedOutbox);

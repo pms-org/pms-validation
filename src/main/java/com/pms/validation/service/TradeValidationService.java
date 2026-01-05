@@ -30,6 +30,7 @@ public class TradeValidationService {
         this.investorDetailsRepository = investorDetailsRepository;
         this.stockRepository = stockRepository;
     }
+    
 
     public ValidationResultDto validateTrade(TradeDto trade) {
         KieSession kieSession = null;
