@@ -1,15 +1,10 @@
 package com.pms.validation.event;
 
 import java.util.UUID;
-import java.util.logging.Logger;
-
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
-import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.retry.annotation.Backoff;
@@ -21,9 +16,6 @@ import com.pms.validation.mapper.ProtoDTOMapper;
 import com.pms.validation.proto.TradeEventProto;
 import com.pms.validation.service.TradeIdempotencyService;
 import com.pms.validation.service.TradeProcessingService;
-import com.pms.validation.service.ValidationCore;
-
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -37,7 +29,9 @@ public class KafkaConsumerService {
     private TradeIdempotencyService tradeIdempotencyService;
 
     @RetryableTopic(attempts = "5", include = {
-            RetryableException.class }, backoff = @Backoff(delay = 2000, multiplier = 2))
+            RetryableException.class // only retry 5x if RetryableException, Other exceptions = straight DLT
+    }, backoff = @Backoff(delay = 2000, multiplier = 2) // retry 1 = 2sec, 2 = 4sec, 3 = 8sec, 4 = 16sec
+    )
     @KafkaListener(topics = "${app.incoming-trades-topic}", groupId = "${spring.kafka.consumer.group-id}", containerFactory = "protobufKafkaListenerContainerFactory")
     public void onTradeIngestion(
             TradeEventProto tradeMessage,
@@ -83,11 +77,9 @@ public class KafkaConsumerService {
             @Header(KafkaHeaders.ORIGINAL_TOPIC) String originalTopic,
             @Header(KafkaHeaders.ORIGINAL_PARTITION) int partition,
             @Header(KafkaHeaders.ORIGINAL_OFFSET) long offset) {
-        System.out.println("DLT MESSAGE RECEIVED");
-        System.out.println("Payload: " + dltMessage);
-        System.out.println("From Topic: " + originalTopic);
-        System.out.println("Partition: " + partition);
-        System.out.println("Offset: " + offset);
+
+        log.error("Trade moved to DLT | DLT message={} topic={} partition={} offset={}",
+                dltMessage, originalTopic, partition, offset);
     }
 
 }

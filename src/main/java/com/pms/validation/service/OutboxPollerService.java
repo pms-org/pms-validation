@@ -22,12 +22,13 @@ public class OutboxPollerService {
     @Autowired
     private OutboxProcessorService outboxProcessorService;
 
+    private static final int BATCH_SIZE = 50;
+
     @Scheduled(fixedDelay = 2000)
     public void pollAndPublish() {
 
-        List<ValidationOutboxEntity> pending
-                = outboxRepo.findBySentStatusOrderByValidationOutboxIdAsc("PENDING",
-                        PageRequest.of(0, 50));
+        List<ValidationOutboxEntity> pending = outboxRepo.findBySentStatusOrderByValidationOutboxIdAsc("PENDING",
+                PageRequest.of(0, BATCH_SIZE));
 
         if (pending.isEmpty()) {
             return;
