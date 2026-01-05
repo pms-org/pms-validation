@@ -74,11 +74,12 @@ public class KafkaConsumerService {
     @DltHandler
     public void handleDltMessage(
             TradeEventProto dltMessage,
+            @Header(KafkaHeaders.RECEIVED_TOPIC) String dltTopic,
             @Header(KafkaHeaders.ORIGINAL_TOPIC) String originalTopic,
             @Header(KafkaHeaders.ORIGINAL_PARTITION) int partition,
             @Header(KafkaHeaders.ORIGINAL_OFFSET) long offset) {
-
-        log.error("Trade moved to DLT | DLT message={} topic={} partition={} offset={}",
+        // TODO: send DLT msg to rttm
+        log.error("Trade moved to DLT | DLT Topic={} DLT message={} topic={} partition={} offset={}", dltTopic,
                 dltMessage, originalTopic, partition, offset);
     }
 
