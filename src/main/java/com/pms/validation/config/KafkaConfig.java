@@ -45,9 +45,6 @@ public class KafkaConfig {
 	@Value("${schema.registry.url}")
 	private String schemaRegistryUrl;
 
-	@Autowired
-	private Environment env;
-
 	@Bean
 	NewTopic validationTopic() {
 		return TopicBuilder.name(outgoingValidTradesTopic)

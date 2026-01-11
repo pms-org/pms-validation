@@ -23,8 +23,8 @@ spring:
 
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
       timeout: ${REDIS_TIMEOUT:2s}
       
 
@@ -32,21 +32,21 @@ spring:
     type: redis
 
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
     consumer:
-      group-id: validation-consumer-group
+      group-id: ${KAFKA_CONSUMER_GROUP_ID}
 
 schema:
   registry:
     url: ${SCHEMA_REGISTRY_URL}
 
 server:
-  port: 8080
+  port: ${SERVER_PORT}
 
 app:
-  incoming-trades-topic: raw-trades-topic
-  outgoing-valid-trades-topic: valid-trades-topic
-  outgoing-invalid-trades-topic: invalid-trades-topic
+  incoming-trades-topic: ${INCOMING_TRADES_TOPIC}
+  outgoing-valid-trades-topic: ${OUTGOING_VALID_TRADES_TOPIC}
+  outgoing-invalid-trades-topic: ${OUTGOING_INVALID_TRADES_TOPIC}
 
 logging:
   level:
