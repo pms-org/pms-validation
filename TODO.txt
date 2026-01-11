@@ -1,0 +1,2 @@
+TODO: Implement Batch wise consumption from topics ( Kafka Consumer )
+TODO: Improve Kafka Configs
