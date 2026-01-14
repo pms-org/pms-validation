@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -133,6 +134,12 @@ public class KafkaConfig {
 		ConcurrentKafkaListenerContainerFactory<String, TradeEventProto> factory = new ConcurrentKafkaListenerContainerFactory<>();
 
 		factory.setConsumerFactory(consumerFactory);
+
+		// Enable batch listener so KafkaListener can receive List<Message>
+		factory.setBatchListener(true);
+
+		// Use manual ack mode so listener can acknowledge after successful processing
+		factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
 
 		return factory;
 	}

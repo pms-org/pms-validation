@@ -61,6 +61,7 @@ public class ValidationCore {
                     .build();
 
             outboxRepo.save(outbox);
+            log.info("Outbox entry inserted into validation_outbox for trade {}", trade.getTradeId());
 
         } else {
             log.info("Trade {} is invalid: {}", trade.getTradeId(), errors);
@@ -80,10 +81,8 @@ public class ValidationCore {
                     .build();
 
             invalidTradeRepo.save(invalidTrade);
+            log.info("Invalid trade persisted into validation_invalid_trades for trade {}", trade.getTradeId());
 
         }
-
-        log.info("Outbox entry inserted for trade {}", trade.getTradeId());
-
     }
 }
