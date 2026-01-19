@@ -1,4 +1,4 @@
-package com.pms.validation.service;
+package com.pms.validation.service.processing;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -14,6 +14,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import com.pms.validation.dto.TradeDto;
 import com.pms.validation.proto.TradeEventProto;
 import com.pms.validation.mapper.ProtoDTOMapper;
+import com.pms.validation.service.domain.TradeIdempotencyService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,8 +25,16 @@ public class ValidationBatchProcessingService {
     @Autowired
     private TradeIdempotencyService idempotencyService;
 
+    // kept for compatibility; direct persistence is handled in this batch service now
+
     @Autowired
-    private TradeProcessingService tradeProcessingService;
+    private ValidationCore validationCore;
+
+    @Autowired
+    private com.pms.validation.repository.ValidationOutboxRepository validationOutboxRepository;
+
+    @Autowired
+    private com.pms.validation.repository.InvalidTradeRepository invalidTradeRepository;
 
     @Autowired(required = false)
     private SimpMessagingTemplate messagingTemplate;
@@ -41,6 +50,10 @@ public class ValidationBatchProcessingService {
         // collect ids which were successfully processed in this transaction
         List<java.util.UUID> successfulIds = new ArrayList<>();
 
+        // Collect entities for batch persistence
+        List<com.pms.validation.entity.ValidationOutboxEntity> outboxToSave = new ArrayList<>();
+        List<com.pms.validation.entity.InvalidTradeEntity> invalidToSave = new ArrayList<>();
+
         for (TradeDto dto : dtos) {
             // idempotency check
             if (dto.getTradeId() == null) {
@@ -54,14 +67,32 @@ public class ValidationBatchProcessingService {
             }
 
             try {
-                tradeProcessingService.processTrade(dto);
-                // Do NOT mark processed here. Defer to afterCommit callback so we only mark
-                // in Redis after the DB transaction has successfully committed.
+                // Evaluate rules and build entities (do not persist here)
+                ValidationDecision decision = validationCore.evaluate(dto);
+
+                if (decision.isValid()) {
+                    outboxToSave.add(decision.getOutboxEntity());
+                } else {
+                    invalidToSave.add(decision.getInvalidEntity());
+                }
+
                 successfulIds.add(dto.getTradeId());
+
             } catch (Exception ex) {
-                log.error("Error processing trade {} in batch", dto.getTradeId(), ex);
+                log.error("Error evaluating trade {} in batch", dto.getTradeId(), ex);
                 throw ex; // let listener pause and handle
             }
+        }
+
+        // Persist entities in batch within the same transaction
+        if (!outboxToSave.isEmpty()) {
+            validationOutboxRepository.saveAll(outboxToSave);
+            log.info("Saved {} outbox entries in batch.", outboxToSave.size());
+        }
+
+        if (!invalidToSave.isEmpty()) {
+            invalidTradeRepository.saveAll(invalidToSave);
+            log.info("Saved {} invalid trade entries in batch.", invalidToSave.size());
         }
 
         // Register afterCommit callback to mark processed IDs in Redis only after commit

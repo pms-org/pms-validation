@@ -15,9 +15,8 @@ import org.springframework.stereotype.Service;
 import com.pms.validation.dto.TradeDto;
 import com.pms.validation.mapper.ProtoDTOMapper;
 import com.pms.validation.proto.TradeEventProto;
-import com.pms.validation.service.TradeIdempotencyService;
-import com.pms.validation.service.TradeProcessingService;
-import com.pms.validation.service.ValidationBatchProcessingService;
+import com.pms.validation.service.domain.TradeIdempotencyService;
+import com.pms.validation.service.processing.ValidationBatchProcessingService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,7 +34,7 @@ public class KafkaConsumerService {
     private KafkaListenerEndpointRegistry registry;
 
     @Autowired
-    private com.pms.validation.service.DbHealthMonitor dbHealthMonitor;
+    private com.pms.validation.service.health.DbHealthMonitor dbHealthMonitor;
 
     // Batch consumer: receives a list of protobuf messages and manual ack
     @KafkaListener(id = "tradesListener", topics = "${app.incoming-trades-topic}", groupId = "${spring.kafka.consumer.group-id}", containerFactory = "protobufKafkaListenerContainerFactory")
