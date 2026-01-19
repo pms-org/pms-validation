@@ -21,6 +21,8 @@ spring:
         order_inserts: ${JPA_ORDER_INSERTS:true}
         order_updates: ${JPA_ORDER_UPDATES:true}
 
+  # Flyway removed — migrations will be applied manually in the target database
+
   docker:
     compose:
       enabled: false

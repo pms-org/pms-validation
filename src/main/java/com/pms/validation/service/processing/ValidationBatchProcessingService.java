@@ -47,8 +47,10 @@ public class ValidationBatchProcessingService {
                 .map(ProtoDTOMapper::toDto)
                 .collect(Collectors.toList());
 
-        // collect ids which were successfully processed in this transaction
-        List<java.util.UUID> successfulIds = new ArrayList<>();
+    // collect ids which were successfully processed in this transaction
+    List<java.util.UUID> successfulIds = new ArrayList<>();
+    // ids for which we acquired a Redis PROCESSING reservation
+    List<java.util.UUID> reservedIds = new ArrayList<>();
 
         // Collect entities for batch persistence
         List<com.pms.validation.entity.ValidationOutboxEntity> outboxToSave = new ArrayList<>();
@@ -61,10 +63,18 @@ public class ValidationBatchProcessingService {
                 continue;
             }
 
+            // Try to reserve processing for this trade to avoid race with other consumers
             if (idempotencyService.isDone(dto.getTradeId())) {
                 log.info("Trade already done, skipping | tradeId={}", dto.getTradeId());
                 continue;
             }
+
+            boolean reserved = idempotencyService.tryStartProcessing(dto.getTradeId());
+            if (!reserved) {
+                log.info("Trade already being processed by another worker, skipping | tradeId={}", dto.getTradeId());
+                continue;
+            }
+            reservedIds.add(dto.getTradeId());
 
             try {
                 // Evaluate rules and build entities (do not persist here)
@@ -95,8 +105,10 @@ public class ValidationBatchProcessingService {
             log.info("Saved {} invalid trade entries in batch.", invalidToSave.size());
         }
 
-        // Register afterCommit callback to mark processed IDs in Redis only after commit
-        if (!successfulIds.isEmpty()) {
+        // Register synchronization to:
+        // - mark DONE after commit for successfulIds
+        // - clear PROCESSING reservation for reservedIds if transaction rolled back or the id was not successful
+        if (!reservedIds.isEmpty()) {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
@@ -105,6 +117,22 @@ public class ValidationBatchProcessingService {
                             idempotencyService.markDone(id);
                         } catch (Exception ex) {
                             log.error("Failed to mark idempotency DONE for {}", id, ex);
+                        }
+                    }
+                }
+
+                @Override
+                public void afterCompletion(int status) {
+                    // If transaction did not commit, release PROCESSING reservations for those we reserved
+                    if (status != TransactionSynchronization.STATUS_COMMITTED) {
+                        for (java.util.UUID id : reservedIds) {
+                            if (!successfulIds.contains(id)) {
+                                try {
+                                    idempotencyService.clearProcessing(id);
+                                } catch (Exception ex) {
+                                    log.error("Failed to clear PROCESSING for {}", id, ex);
+                                }
+                            }
                         }
                     }
                 }
