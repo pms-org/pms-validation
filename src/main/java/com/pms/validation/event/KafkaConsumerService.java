@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -11,6 +12,7 @@ import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.CannotCreateTransactionException;
 
 import com.pms.validation.dto.TradeDto;
 import com.pms.validation.mapper.ProtoDTOMapper;
@@ -47,8 +49,8 @@ public class KafkaConsumerService {
             batchProcessingService.processBatch(messages);
 
             ack.acknowledge();
-        } catch (Exception ex) {
-            log.error("Batch processing failed, pausing consumer", ex);
+        } catch (CannotCreateTransactionException | DataAccessException ex) {
+            log.error("DB Down -->  pausing Kafka consumer", ex);
             // Pause the consumer on DB failures or connectivity issues
             // Stop the listener and start monitoring to resume when DB is back
             var container = registry.getListenerContainer("tradesListener");
