@@ -140,6 +140,8 @@
             <artifactId>spring-boot-starter-logging</artifactId>
         </dependency>
 
+        <!-- Flyway removed: DB migrations will be applied manually in this environment -->
+
         <!-- ProtoBuf Core Library -->
         <dependency>
             <groupId>com.google.protobuf</groupId>

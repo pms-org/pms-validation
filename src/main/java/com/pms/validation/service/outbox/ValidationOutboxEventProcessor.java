@@ -11,6 +11,8 @@ import com.pms.validation.entity.ValidationOutboxEntity;
 import com.pms.validation.proto.TradeEventProto;
 import com.pms.validation.mapper.ProtoEntityMapper;
 import com.pms.validation.repository.ValidationOutboxRepository;
+import com.pms.validation.repository.DlqRepository;
+import com.pms.validation.entity.DlqEntry;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,8 @@ public class ValidationOutboxEventProcessor {
     private final AdaptiveBatchSizer batchSizer;
 
     private final KafkaTemplate<String, TradeEventProto> kafkaTemplate;
+
+    private final DlqRepository dlqRepository;
 
     private static final String TOPIC = "portfolio-risk-metrics"; // adjust as needed
 
@@ -81,7 +85,41 @@ public class ValidationOutboxEventProcessor {
                 successfulIds.add(outbox.getValidationOutboxId());
 
             } catch (Exception e) {
+                Throwable cause = e.getCause() != null ? e.getCause() : e;
                 log.error("Error sending outbox {} : {}", outbox.getValidationOutboxId(), e.getMessage());
+
+                // Simple poison-pill classification: serialization and illegal argument are considered poison
+                boolean poison = cause instanceof org.apache.kafka.common.errors.SerializationException
+                        || cause instanceof IllegalArgumentException
+                        || cause instanceof com.fasterxml.jackson.core.JsonProcessingException;
+
+                if (poison) {
+                    try {
+                        // attempt to persist payload to DLQ for later inspection
+                        TradeEventProto proto = null;
+                        try {
+                            proto = ProtoEntityMapper.toProto(outbox);
+                        } catch (Exception ex) {
+                            // ignore, we'll persist empty payload if proto can't be built
+                        }
+
+                        byte[] payload = proto != null ? proto.toByteArray() : new byte[0];
+
+                        DlqEntry entry = DlqEntry.builder()
+                                .payload(payload)
+                                .errorDetail(e.toString())
+                                .build();
+
+                        dlqRepository.save(entry);
+                        log.warn("Persisted outbox {} to DLQ as id {}", outbox.getValidationOutboxId(), entry.getId());
+                        // mark as failed so dispatcher won't retry endlessly
+                        return ProcessingResult.poisonPill(successfulIds, outbox);
+                    } catch (Exception ex) {
+                        log.error("Failed to persist DLQ entry for outbox {}: {}", outbox.getValidationOutboxId(), ex.getMessage());
+                        return ProcessingResult.systemFailure(successfulIds);
+                    }
+                }
+
                 return ProcessingResult.systemFailure(successfulIds);
             }
         }

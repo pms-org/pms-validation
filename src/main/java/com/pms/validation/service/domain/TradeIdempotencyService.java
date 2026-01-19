@@ -65,4 +65,23 @@ public class TradeIdempotencyService {
 
         return done;
     }
+
+    /**
+     * Clear the PROCESSING state for a trade if it is still marked PROCESSING.
+     * Used when a processing reservation must be released after a rollback or failure.
+     */
+    public void clearProcessing(UUID tradeId) {
+        String redisKey = key(tradeId);
+        try {
+            String state = redisTemplate.opsForValue().get(redisKey);
+            if ("PROCESSING".equals(state)) {
+                redisTemplate.delete(redisKey);
+                log.debug("Cleared PROCESSING state | key={}", redisKey);
+            } else {
+                log.debug("Not clearing key {} - current state={}", redisKey, state);
+            }
+        } catch (Exception ex) {
+            log.warn("Failed to clear PROCESSING state for {}: {}", redisKey, ex.getMessage());
+        }
+    }
 }
