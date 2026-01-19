@@ -1,4 +1,4 @@
-package com.pms.validation.service;
+package com.pms.validation.service.domain;
 
 import java.util.List;
 import java.util.UUID;

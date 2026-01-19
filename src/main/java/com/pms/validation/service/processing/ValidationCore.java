@@ -1,4 +1,4 @@
-package com.pms.validation.service;
+package com.pms.validation.service.processing;
 
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+// transactional behavior is handled by the caller when batching
 
 import com.pms.validation.dto.TradeDto;
 import com.pms.validation.dto.ValidationResultDto;
@@ -14,6 +14,7 @@ import com.pms.validation.entity.InvalidTradeEntity;
 import com.pms.validation.entity.ValidationOutboxEntity;
 import com.pms.validation.repository.InvalidTradeRepository;
 import com.pms.validation.repository.ValidationOutboxRepository;
+import com.pms.validation.service.domain.TradeValidationService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,10 +34,11 @@ public class ValidationCore {
     @Value("${app.incoming-trades-topic}")
     private String incomingTradesTopic;
 
-    // Atomic DB transaction: validate + outbox write.
-    @Transactional
-    public void handleTransaction(TradeDto trade) {
-
+    /**
+     * Evaluate a trade against validation rules and build entity objects without persisting.
+     * The caller is responsible for persisting the returned entities (batch saveAll recommended).
+     */
+    public com.pms.validation.service.processing.ValidationDecision evaluate(TradeDto trade) {
         ValidationResultDto result = tradeValidationService.validateTrade(trade);
 
         String status = result.isValid() ? "VALID" : "INVALID";
@@ -60,8 +62,8 @@ public class ValidationCore {
                     .validationErrors(null)
                     .build();
 
-            outboxRepo.save(outbox);
-            log.info("Outbox entry inserted into validation_outbox for trade {}", trade.getTradeId());
+            log.debug("Validation decision: VALID for trade {}", trade.getTradeId());
+            return new com.pms.validation.service.processing.ValidationDecision(outbox, null);
 
         } else {
             log.info("Trade {} is invalid: {}", trade.getTradeId(), errors);
@@ -80,9 +82,8 @@ public class ValidationCore {
                     .validationErrors(errors)
                     .build();
 
-            invalidTradeRepo.save(invalidTrade);
-            log.info("Invalid trade persisted into validation_invalid_trades for trade {}", trade.getTradeId());
-
+            log.debug("Validation decision: INVALID for trade {}", trade.getTradeId());
+            return new com.pms.validation.service.processing.ValidationDecision(null, invalidTrade);
         }
     }
 }

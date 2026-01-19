@@ -1,4 +1,4 @@
-package com.pms.validation.service;
+package com.pms.validation.service.outbox;
 
 import org.springframework.stereotype.Component;
 

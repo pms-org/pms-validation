@@ -1,4 +1,4 @@
-package com.pms.validation.service;
+package com.pms.validation.service.domain;
 
 import lombok.extern.slf4j.Slf4j;
 
