@@ -1,3 +1,4 @@
-TODO: Implement Batch wise consumption from topics ( Kafka Consumer )
 TODO: Improve Kafka Configs
 TODO: Advisory locks - research
+
+TODO: Update rttm clients code to send crct data. like enums, get lag info from kafka.

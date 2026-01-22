@@ -13,6 +13,11 @@ import com.pms.validation.mapper.ProtoEntityMapper;
 import com.pms.validation.repository.ValidationOutboxRepository;
 import com.pms.validation.repository.DlqRepository;
 import com.pms.validation.entity.DlqEntry;
+import com.pms.rttm.client.clients.RttmClient;
+import com.pms.rttm.client.dto.TradeEventPayload;
+import com.pms.rttm.client.dto.DlqEventPayload;
+import com.pms.rttm.client.enums.EventType;
+import com.pms.rttm.client.enums.EventStage;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +34,8 @@ public class ValidationOutboxEventProcessor {
     private final KafkaTemplate<String, TradeEventProto> kafkaTemplate;
 
     private final DlqRepository dlqRepository;
+
+    private final RttmClient rttmClient;
 
     private static final String TOPIC = "portfolio-risk-metrics"; // adjust as needed
 
@@ -82,13 +89,17 @@ public class ValidationOutboxEventProcessor {
 
                 log.info("Event {} sent to kafka successfully.", proto);
 
+                // Send trade completion event to RTTM
+                sendTradeCompletionEvent(outbox);
+
                 successfulIds.add(outbox.getValidationOutboxId());
 
             } catch (Exception e) {
                 Throwable cause = e.getCause() != null ? e.getCause() : e;
                 log.error("Error sending outbox {} : {}", outbox.getValidationOutboxId(), e.getMessage());
 
-                // Simple poison-pill classification: serialization and illegal argument are considered poison
+                // Simple poison-pill classification: serialization and illegal argument are
+                // considered poison
                 boolean poison = cause instanceof org.apache.kafka.common.errors.SerializationException
                         || cause instanceof IllegalArgumentException
                         || cause instanceof com.fasterxml.jackson.core.JsonProcessingException;
@@ -112,10 +123,15 @@ public class ValidationOutboxEventProcessor {
 
                         dlqRepository.save(entry);
                         log.warn("Persisted outbox {} to DLQ as id {}", outbox.getValidationOutboxId(), entry.getId());
+
+                        // Send DLQ event to RTTM
+                        sendDlqEventToRttm(outbox, e.getMessage());
+
                         // mark as failed so dispatcher won't retry endlessly
                         return ProcessingResult.poisonPill(successfulIds, outbox);
                     } catch (Exception ex) {
-                        log.error("Failed to persist DLQ entry for outbox {}: {}", outbox.getValidationOutboxId(), ex.getMessage());
+                        log.error("Failed to persist DLQ entry for outbox {}: {}", outbox.getValidationOutboxId(),
+                                ex.getMessage());
                         return ProcessingResult.systemFailure(successfulIds);
                     }
                 }
@@ -125,6 +141,50 @@ public class ValidationOutboxEventProcessor {
         }
 
         return ProcessingResult.success(successfulIds);
+    }
+
+    /**
+     * Send trade completion event to RTTM
+     */
+    private void sendTradeCompletionEvent(ValidationOutboxEntity outbox) {
+        try {
+            TradeEventPayload event = TradeEventPayload.builder()
+                    .tradeId(outbox.getTradeId().toString())
+                    .serviceName("pms-validation")
+                    .eventType(EventType.TRADE_VALIDATED)
+                    .eventStage(EventStage.VALIDATED)
+                    .eventStatus("OK")
+                    .sourceQueue("pms.validation.out.valid")
+                    .targetQueue(TOPIC)
+                    .message("Trade dispatched to downstream service")
+                    .build();
+
+            rttmClient.sendTradeEvent(event);
+            log.debug("Sent trade completion event to RTTM for trade {}", outbox.getTradeId());
+        } catch (Exception ex) {
+            log.warn("Failed to send trade completion event to RTTM: {}", ex.getMessage());
+        }
+    }
+
+    /**
+     * Send DLQ event to RTTM when outbox processing fails
+     */
+    private void sendDlqEventToRttm(ValidationOutboxEntity outbox, String errorReason) {
+        try {
+            DlqEventPayload dlqEvent = DlqEventPayload.builder()
+                    .tradeId(outbox.getTradeId().toString())
+                    .serviceName("pms-validation")
+                    .topicName("validation_outbox")
+                    .originalTopic(TOPIC)
+                    .reason(errorReason)
+                    .eventStage(EventStage.VALIDATED)
+                    .build();
+
+            rttmClient.sendDlqEvent(dlqEvent);
+            log.debug("Sent DLQ event to RTTM for trade {}", outbox.getTradeId());
+        } catch (Exception ex) {
+            log.warn("Failed to send DLQ event to RTTM: {}", ex.getMessage());
+        }
     }
 
 }

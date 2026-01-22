@@ -19,6 +19,9 @@ import com.pms.validation.mapper.ProtoDTOMapper;
 import com.pms.validation.proto.TradeEventProto;
 import com.pms.validation.service.domain.TradeIdempotencyService;
 import com.pms.validation.service.processing.ValidationBatchProcessingService;
+import com.pms.rttm.client.clients.RttmClient;
+import com.pms.rttm.client.dto.DlqEventPayload;
+import com.pms.rttm.client.enums.EventStage;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,9 +41,13 @@ public class KafkaConsumerService {
     @Autowired
     private com.pms.validation.service.health.DbHealthMonitor dbHealthMonitor;
 
+    @Autowired
+    private RttmClient rttmClient;
+
     // Batch consumer: receives a list of protobuf messages and manual ack
     @KafkaListener(id = "tradesListener", topics = "${app.incoming-trades-topic}", groupId = "${spring.kafka.consumer.group-id}", containerFactory = "protobufKafkaListenerContainerFactory")
-    public void consume(List<TradeEventProto> messages, Acknowledgment ack, @Header(KafkaHeaders.RECEIVED_PARTITION) int partition) {
+    public void consume(List<TradeEventProto> messages, Acknowledgment ack,
+            @Header(KafkaHeaders.RECEIVED_PARTITION) int partition) {
 
         try {
             log.info("Received {} trade messages from partition {}", messages.size(), partition);
@@ -68,9 +75,25 @@ public class KafkaConsumerService {
             @Header(KafkaHeaders.ORIGINAL_TOPIC) String originalTopic,
             @Header(KafkaHeaders.ORIGINAL_PARTITION) int partition,
             @Header(KafkaHeaders.ORIGINAL_OFFSET) long offset) {
-        // TODO: send DLT msg to rttm
         log.error("Trade moved to DLT | DLT Topic={} DLT message={} topic={} partition={} offset={}", dltTopic,
                 dltMessage, originalTopic, partition, offset);
+
+        // Send DLQ event to RTTM
+        try {
+            DlqEventPayload dlqEvent = DlqEventPayload.builder()
+                    .tradeId(dltMessage.getTradeId())
+                    .serviceName("pms-validation")
+                    .topicName(dltTopic)
+                    .originalTopic(originalTopic)
+                    .reason("Deserialization error or max retries exceeded")
+                    .eventStage(EventStage.CONSUME)
+                    .build();
+
+            rttmClient.sendDlqEvent(dlqEvent);
+            log.info("Sent DLQ event to RTTM for trade {}", dltMessage.getTradeId());
+        } catch (Exception ex) {
+            log.warn("Failed to send DLQ event to RTTM: {}", ex.getMessage());
+        }
     }
 
 }

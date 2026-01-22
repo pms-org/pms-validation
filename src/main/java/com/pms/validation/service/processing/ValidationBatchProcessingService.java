@@ -15,6 +15,11 @@ import com.pms.validation.dto.TradeDto;
 import com.pms.validation.proto.TradeEventProto;
 import com.pms.validation.mapper.ProtoDTOMapper;
 import com.pms.validation.service.domain.TradeIdempotencyService;
+import com.pms.rttm.client.clients.RttmClient;
+import com.pms.rttm.client.dto.TradeEventPayload;
+import com.pms.rttm.client.dto.ErrorEventPayload;
+import com.pms.rttm.client.enums.EventType;
+import com.pms.rttm.client.enums.EventStage;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,7 +30,8 @@ public class ValidationBatchProcessingService {
     @Autowired
     private TradeIdempotencyService idempotencyService;
 
-    // kept for compatibility; direct persistence is handled in this batch service now
+    // kept for compatibility; direct persistence is handled in this batch service
+    // now
 
     @Autowired
     private ValidationCore validationCore;
@@ -39,6 +45,9 @@ public class ValidationBatchProcessingService {
     @Autowired(required = false)
     private SimpMessagingTemplate messagingTemplate;
 
+    @Autowired
+    private RttmClient rttmClient;
+
     @Transactional
     public void processBatch(List<TradeEventProto> messages) {
         log.info("Processing validation batch of {} trades.", messages.size());
@@ -47,10 +56,10 @@ public class ValidationBatchProcessingService {
                 .map(ProtoDTOMapper::toDto)
                 .collect(Collectors.toList());
 
-    // collect ids which were successfully processed in this transaction
-    List<java.util.UUID> successfulIds = new ArrayList<>();
-    // ids for which we acquired a Redis PROCESSING reservation
-    List<java.util.UUID> reservedIds = new ArrayList<>();
+        // collect ids which were successfully processed in this transaction
+        List<java.util.UUID> successfulIds = new ArrayList<>();
+        // ids for which we acquired a Redis PROCESSING reservation
+        List<java.util.UUID> reservedIds = new ArrayList<>();
 
         // Collect entities for batch persistence
         List<com.pms.validation.entity.ValidationOutboxEntity> outboxToSave = new ArrayList<>();
@@ -82,14 +91,18 @@ public class ValidationBatchProcessingService {
 
                 if (decision.isValid()) {
                     outboxToSave.add(decision.getOutboxEntity());
+                    sendTradeValidationEvent(dto, true, null);
                 } else {
                     invalidToSave.add(decision.getInvalidEntity());
+                    sendTradeValidationEvent(dto, false, decision.getInvalidEntity().getValidationErrors());
                 }
 
                 successfulIds.add(dto.getTradeId());
 
             } catch (Exception ex) {
                 log.error("Error evaluating trade {} in batch", dto.getTradeId(), ex);
+                // Send error event to RTTM
+                sendErrorEvent(dto, ex.getMessage());
                 throw ex; // let listener pause and handle
             }
         }
@@ -107,7 +120,8 @@ public class ValidationBatchProcessingService {
 
         // Register synchronization to:
         // - mark DONE after commit for successfulIds
-        // - clear PROCESSING reservation for reservedIds if transaction rolled back or the id was not successful
+        // - clear PROCESSING reservation for reservedIds if transaction rolled back or
+        // the id was not successful
         if (!reservedIds.isEmpty()) {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
@@ -123,7 +137,8 @@ public class ValidationBatchProcessingService {
 
                 @Override
                 public void afterCompletion(int status) {
-                    // If transaction did not commit, release PROCESSING reservations for those we reserved
+                    // If transaction did not commit, release PROCESSING reservations for those we
+                    // reserved
                     if (status != TransactionSynchronization.STATUS_COMMITTED) {
                         for (java.util.UUID id : reservedIds) {
                             if (!successfulIds.contains(id)) {
@@ -147,6 +162,49 @@ public class ValidationBatchProcessingService {
             }
         } catch (RuntimeException ex) {
             log.warn("Failed to send websocket update", ex);
+        }
+    }
+
+    /**
+     * Send trade validation event to RTTM
+     */
+    private void sendTradeValidationEvent(TradeDto trade, boolean valid, String errors) {
+        try {
+            TradeEventPayload event = TradeEventPayload.builder()
+                    .tradeId(trade.getTradeId().toString())
+                    .serviceName("pms-validation")
+                    .eventType(EventType.TRADE_VALIDATED)
+                    .eventStage(EventStage.VALIDATED)
+                    .eventStatus(valid ? "OK" : "ERROR")
+                    .sourceQueue("pms.validation.in")
+                    .targetQueue(valid ? "pms.validation.out.valid" : "pms.validation.out.invalid")
+                    .message(valid ? "Trade validation passed" : errors)
+                    .build();
+
+            rttmClient.sendTradeEvent(event);
+            log.debug("Sent validation event to RTTM for trade {}", trade.getTradeId());
+        } catch (Exception ex) {
+            log.warn("Failed to send trade validation event to RTTM: {}", ex.getMessage());
+        }
+    }
+
+    /**
+     * Send error event to RTTM when validation fails
+     */
+    private void sendErrorEvent(TradeDto trade, String errorMessage) {
+        try {
+            ErrorEventPayload errorEvent = ErrorEventPayload.builder()
+                    .tradeId(trade.getTradeId().toString())
+                    .serviceName("pms-validation")
+                    .errorType("VALIDATION_ERROR")
+                    .errorMessage(errorMessage)
+                    .eventStage(EventStage.VALIDATE)
+                    .build();
+
+            rttmClient.sendErrorEvent(errorEvent);
+            log.debug("Sent error event to RTTM for trade {}", trade.getTradeId());
+        } catch (Exception ex) {
+            log.warn("Failed to send error event to RTTM: {}", ex.getMessage());
         }
     }
 }
