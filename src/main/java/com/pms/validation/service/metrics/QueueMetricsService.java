@@ -75,7 +75,6 @@ public class QueueMetricsService {
                     .consumedOffset(consumedOffset)
                     .consumerGroup(consumerGroup)
                     .build();
-
             rttmClient.sendQueueMetric(metric);
             log.debug("Sent queue metric for topic {} partition {}", topicName, partitionId);
         } catch (Exception ex) {

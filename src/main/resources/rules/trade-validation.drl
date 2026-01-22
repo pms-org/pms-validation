@@ -73,10 +73,10 @@ rule "Trade - quantity must be positive"
         $t : TradeDto( quantity != null )
         $r : ValidationResultDto()
     then
-        if ($t.getQuantity() == null || $t.getQuantity() <= 0) {
+        if ($t.getQuantity() <= 0) {
             addError($r, "quantity must be greater than 0");
         }
-        if ($t.getQuantity() != null && $t.getQuantity() > 1000000L) {
+        if ($t.getQuantity() > 1000000L) {
             addError($r, "quantity exceeds maximum allowed per trade (1,000,000)");
         }
 end
@@ -86,17 +86,24 @@ rule "Trade - timestamp sanity"
         $t : TradeDto( timestamp != null )
         $r : ValidationResultDto()
     then
-        if ($t.getTimestamp().isAfter(LocalDateTime.now())) {
+        LocalDateTime now = LocalDateTime.now();
+        if ($t.getTimestamp().isAfter(now)) {
             addError($r, "timestamp cannot be in the future");
+        }
+        if ($t.getTimestamp().isBefore(now.minusYears(1))) {
+            addError($r, "timestamp is too old (older than 1 year)");
         }
 end
 
 rule "Trade - side validation"
     when
-        $t : TradeDto( side == null )
+        $t : TradeDto( side != null )
         $r : ValidationResultDto()
     then
-        addError($r, "side must be provided (BUY or SELL)");
+        String sideLower = $t.getSide().toLowerCase();
+        if (!sideLower.equals("buy") && !sideLower.equals("sell")) {
+            addError($r, "side must be BUY or SELL");
+        }
 end
 
 rule "Trade - symbol basic format"
