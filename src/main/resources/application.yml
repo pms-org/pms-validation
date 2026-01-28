@@ -1,6 +1,14 @@
 spring:
   application:
     name: validation
+    
+  threads:
+    virtual:
+      enabled: true
+
+  autoconfigure:
+    exclude:
+      - org.springframework.cloud.autoconfigure.LifecycleMvcEndpointAutoConfiguration
 
   datasource:
     url: ${DB_URL}
@@ -38,7 +46,10 @@ spring:
     type: redis
 
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    admin:
+      auto-create: false
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     consumer:
       group-id: ${KAFKA_CONSUMER_GROUP_ID}
     producer:
@@ -69,7 +80,7 @@ schema:
     url: ${SCHEMA_REGISTRY_URL}
 
 server:
-  port: ${SERVER_PORT}
+  port: ${SERVER_PORT:8080}
 
 app:
   incoming-trades-topic: ${INCOMING_TRADES_TOPIC}

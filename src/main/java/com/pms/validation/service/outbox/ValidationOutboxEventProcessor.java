@@ -122,7 +122,8 @@ public class ValidationOutboxEventProcessor {
                                 .build();
 
                         dlqRepository.save(entry);
-                        log.warn("Persisted outbox {} to DLQ as id {}", outbox.getValidationOutboxId(), entry.getId());
+                        log.warn("Persisted outbox {} to DLQ as id {}", outbox.getValidationOutboxId(),
+                                entry.getDlqEntryid());
 
                         // Send DLQ event to RTTM
                         sendDlqEventToRttm(outbox, e.getMessage());

@@ -18,6 +18,7 @@ import com.pms.validation.dto.TradeDto;
 import com.pms.validation.mapper.ProtoDTOMapper;
 import com.pms.validation.proto.TradeEventProto;
 import com.pms.validation.service.domain.TradeIdempotencyService;
+import com.pms.validation.service.health.DbHealthMonitor;
 import com.pms.validation.service.processing.ValidationBatchProcessingService;
 import com.pms.rttm.client.clients.RttmClient;
 import com.pms.rttm.client.dto.DlqEventPayload;
@@ -39,7 +40,7 @@ public class KafkaConsumerService {
     private KafkaListenerEndpointRegistry registry;
 
     @Autowired
-    private com.pms.validation.service.health.DbHealthMonitor dbHealthMonitor;
+    private DbHealthMonitor dbHealthMonitor;
 
     @Autowired
     private RttmClient rttmClient;

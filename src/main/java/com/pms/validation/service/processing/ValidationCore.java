@@ -35,10 +35,12 @@ public class ValidationCore {
     private String incomingTradesTopic;
 
     /**
-     * Evaluate a trade against validation rules and build entity objects without persisting.
-     * The caller is responsible for persisting the returned entities (batch saveAll recommended).
+     * Evaluate a trade against validation rules and build entity objects without
+     * persisting.
+     * The caller is responsible for persisting the returned entities (batch saveAll
+     * recommended).
      */
-    public com.pms.validation.service.processing.ValidationDecision evaluate(TradeDto trade) {
+    public ValidationDecision evaluate(TradeDto trade) {
         ValidationResultDto result = tradeValidationService.validateTrade(trade);
 
         String status = result.isValid() ? "VALID" : "INVALID";
@@ -63,7 +65,7 @@ public class ValidationCore {
                     .build();
 
             log.debug("Validation decision: VALID for trade {}", trade.getTradeId());
-            return new com.pms.validation.service.processing.ValidationDecision(outbox, null);
+            return new ValidationDecision(outbox, null);
 
         } else {
             log.info("Trade {} is invalid: {}", trade.getTradeId(), errors);
@@ -83,7 +85,7 @@ public class ValidationCore {
                     .build();
 
             log.debug("Validation decision: INVALID for trade {}", trade.getTradeId());
-            return new com.pms.validation.service.processing.ValidationDecision(null, invalidTrade);
+            return new ValidationDecision(null, invalidTrade);
         }
     }
 }

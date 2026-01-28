@@ -1,7 +1,6 @@
 package com.pms.validation.config;
 
 import com.google.protobuf.MessageLite;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -13,26 +12,26 @@ import com.pms.rttm.client.config.RttmClientConfig;
 @Configuration
 public class RttmClientConfiguration {
 
-    @Bean
-    public RttmClient rttmClient(
-            KafkaTemplate<String, MessageLite> kafkaTemplate,
-            RttmClientProperties properties) {
+	@Bean
+	public RttmClient rttmClient(
+			KafkaTemplate<String, MessageLite> kafkaTemplate,
+			RttmClientProperties properties) {
 
-        RttmClientConfig config = RttmClientConfig.builder()
-                .mode(properties.getMode())
-                .kafkaBootstrapServers(properties.getKafka().getBootstrapServers())
-                .kafkaTopicTradeEvents(properties.getKafka().getTopics().getTradeEvents())
-                .kafkaTopicDlqEvents(properties.getKafka().getTopics().getDlqEvents())
-                .kafkaTopicQueueMetrics(properties.getKafka().getTopics().getQueueMetrics())
-                .kafkaTopicErrorEvents(properties.getKafka().getTopics().getErrorEvents())
-                .sendTimeoutMs(properties.getSendTimeoutMs())
-                .retryMaxAttempts(properties.getRetry().getMaxAttempts())
-                .retryBackoffMs(properties.getRetry().getBackoffMs())
-                .build();
+		RttmClientConfig config = RttmClientConfig.builder()
+				.mode(properties.getMode())
+				.kafkaBootstrapServers(properties.getKafka().getBootstrapServers())
+				.kafkaTopicTradeEvents(properties.getKafka().getTopics().getTradeEvents())
+				.kafkaTopicDlqEvents(properties.getKafka().getTopics().getDlqEvents())
+				.kafkaTopicQueueMetrics(properties.getKafka().getTopics().getQueueMetrics())
+				.kafkaTopicErrorEvents(properties.getKafka().getTopics().getErrorEvents())
+				.sendTimeoutMs(properties.getSendTimeoutMs())
+				.retryMaxAttempts(properties.getRetry().getMaxAttempts())
+				.retryBackoffMs(properties.getRetry().getBackoffMs())
+				.build();
 
-        return KafkaRttmClient.builder()
-                .kafkaTemplate(kafkaTemplate)
-                .config(config)
-                .build();
-    }
+		return KafkaRttmClient.builder()
+				.kafkaTemplate(kafkaTemplate)
+				.config(config)
+				.build();
+	}
 }

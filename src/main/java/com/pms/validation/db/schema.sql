@@ -71,3 +71,14 @@ CREATE TABLE validation_outbox (
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL
 );
+
+-- 5. validation_dlq_entry
+CREATE TABLE validation_dlq_entry (
+    dlq_entry_id BIGSERIAL PRIMARY KEY,
+
+    payload BYTEA NOT NULL,
+
+    error_detail TEXT,
+
+    created_at TIMESTAMP NOT NULL
+);

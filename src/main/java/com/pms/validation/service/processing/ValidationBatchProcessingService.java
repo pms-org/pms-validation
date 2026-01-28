@@ -1,6 +1,7 @@
 package com.pms.validation.service.processing;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
@@ -12,7 +13,11 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.pms.validation.dto.TradeDto;
+import com.pms.validation.entity.InvalidTradeEntity;
+import com.pms.validation.entity.ValidationOutboxEntity;
 import com.pms.validation.proto.TradeEventProto;
+import com.pms.validation.repository.InvalidTradeRepository;
+import com.pms.validation.repository.ValidationOutboxRepository;
 import com.pms.validation.mapper.ProtoDTOMapper;
 import com.pms.validation.service.domain.TradeIdempotencyService;
 import com.pms.rttm.client.clients.RttmClient;
@@ -37,10 +42,10 @@ public class ValidationBatchProcessingService {
     private ValidationCore validationCore;
 
     @Autowired
-    private com.pms.validation.repository.ValidationOutboxRepository validationOutboxRepository;
+    private ValidationOutboxRepository validationOutboxRepository;
 
     @Autowired
-    private com.pms.validation.repository.InvalidTradeRepository invalidTradeRepository;
+    private InvalidTradeRepository invalidTradeRepository;
 
     @Autowired(required = false)
     private SimpMessagingTemplate messagingTemplate;
@@ -57,13 +62,13 @@ public class ValidationBatchProcessingService {
                 .collect(Collectors.toList());
 
         // collect ids which were successfully processed in this transaction
-        List<java.util.UUID> successfulIds = new ArrayList<>();
+        List<UUID> successfulIds = new ArrayList<>();
         // ids for which we acquired a Redis PROCESSING reservation
-        List<java.util.UUID> reservedIds = new ArrayList<>();
+        List<UUID> reservedIds = new ArrayList<>();
 
         // Collect entities for batch persistence
-        List<com.pms.validation.entity.ValidationOutboxEntity> outboxToSave = new ArrayList<>();
-        List<com.pms.validation.entity.InvalidTradeEntity> invalidToSave = new ArrayList<>();
+        List<ValidationOutboxEntity> outboxToSave = new ArrayList<>();
+        List<InvalidTradeEntity> invalidToSave = new ArrayList<>();
 
         for (TradeDto dto : dtos) {
             // idempotency check
@@ -126,7 +131,7 @@ public class ValidationBatchProcessingService {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
-                    for (java.util.UUID id : successfulIds) {
+                    for (UUID id : successfulIds) {
                         try {
                             idempotencyService.markDone(id);
                         } catch (Exception ex) {
@@ -140,7 +145,7 @@ public class ValidationBatchProcessingService {
                     // If transaction did not commit, release PROCESSING reservations for those we
                     // reserved
                     if (status != TransactionSynchronization.STATUS_COMMITTED) {
-                        for (java.util.UUID id : reservedIds) {
+                        for (UUID id : reservedIds) {
                             if (!successfulIds.contains(id)) {
                                 try {
                                     idempotencyService.clearProcessing(id);

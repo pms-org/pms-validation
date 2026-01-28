@@ -100,7 +100,7 @@ rule "Trade - side validation"
         $t : TradeDto( side != null )
         $r : ValidationResultDto()
     then
-        String sideLower = $t.getSide().toLowerCase();
+        String sideLower = $t.getSide().toString().toLowerCase();
         if (!sideLower.equals("buy") && !sideLower.equals("sell")) {
             addError($r, "side must be BUY or SELL");
         }
