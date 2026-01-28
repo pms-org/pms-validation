@@ -52,12 +52,12 @@ services:
       PORT: 9021
 
   validation-service:
-    image: jaaswanth07/validation-service:latest 
+    image: sureshvasantha/validation-service:latest 
     container_name: validation-service
     env_file:
       - .env
     ports:
-      - "8085:8080"
+      - "8085:8085"
     depends_on:
       - kafka
       - schema-registry
