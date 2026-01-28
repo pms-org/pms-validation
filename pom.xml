@@ -6,8 +6,8 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.8</version>
-        <relativePath /> <!-- lookup parent from repository -->
+        <version>4.0.0</version>
+        <!-- <relativePath /> lookup parent from repository -->
     </parent>
     <groupId>com.pms</groupId>
     <artifactId>pms-validation</artifactId>
@@ -29,7 +29,7 @@
     </scm>
     <properties>
         <java.version>21</java.version>
-        <spring-cloud.version>2025.0.0</spring-cloud.version>
+        <spring-cloud.version>2024.0.0</spring-cloud.version>
     </properties>
 
     <repositories>
@@ -72,6 +72,12 @@
             <groupId>io.github.pms-org</groupId>
             <artifactId>pms-rttm-client</artifactId>
             <version>1.0.0</version>
+            <!-- <exclusions>
+        <exclusion>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-kafka</artifactId>
+        </exclusion>
+    </exclusions> -->
         </dependency>
 
         <dependency>
@@ -98,15 +104,21 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
+
+        <!-- <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency> -->
+
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-kafka</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
         </dependency>
-
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -159,45 +171,50 @@
             <artifactId>spring-boot-starter-logging</artifactId>
         </dependency>
 
-        <!-- Flyway removed: DB migrations will be applied manually in this environment -->
 
         <!-- ProtoBuf Core Library -->
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>3.25.0</version>
+            <!-- <version>3.25.0</version> -->
+            <version>3.25.5</version>
         </dependency>
 
         <!-- Kafka Protobuf Serializer -->
         <dependency>
             <groupId>io.confluent</groupId>
             <artifactId>kafka-protobuf-serializer</artifactId>
-            <version>7.5.0</version>
+            <!-- <version>7.5.0</version> -->
+            <version>7.6.0</version>
         </dependency>
 
         <!-- Drools / KIE for rules engine   -->
         <dependency>
             <groupId>org.kie</groupId>
             <artifactId>kie-api</artifactId>
-            <version>10.1.0</version>
+            <!-- <version>10.1.0</version> -->
+            <version>9.44.0.Final</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.drools/drools-core -->
         <dependency>
             <groupId>org.drools</groupId>
             <artifactId>drools-core</artifactId>
-            <version>10.1.0</version>
+            <!-- <version>10.1.0</version> -->
+            <version>9.44.0.Final</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.drools/drools-compiler -->
         <dependency>
             <groupId>org.drools</groupId>
             <artifactId>drools-compiler</artifactId>
-            <version>10.1.0</version>
+            <!-- <version>10.1.0</version> -->
+            <version>9.44.0.Final</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.kie/kie-ci -->
         <dependency>
             <groupId>org.kie</groupId>
             <artifactId>kie-ci</artifactId>
-            <version>10.1.0</version>
+            <!-- <version>10.1.0</version> -->
+            <version>9.44.0.Final</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-pool2 -->
         <dependency>
@@ -205,11 +222,11 @@
             <artifactId>commons-pool2</artifactId>
             <version>2.12.1</version>
         </dependency>
-        <dependency>
+        <!-- <dependency>
             <groupId>me.paulschwarz</groupId>
             <artifactId>spring-dotenv</artifactId>
             <version>4.0.0</version>
-        </dependency>
+        </dependency> -->
     </dependencies>
 
     <dependencyManagement>
@@ -267,7 +284,9 @@
 
                 <configuration>
                     <checkStaleness>true</checkStaleness>
-                    <protocArtifact>com.google.protobuf:protoc:3.25.0:exe:${os.detected.classifier}</protocArtifact>
+                    <!--
+                    <protocArtifact>com.google.protobuf:protoc:3.25.0:exe:${os.detected.classifier}</protocArtifact> -->
+                    <protocArtifact>com.google.protobuf:protoc:3.25.5:exe:${os.detected.classifier}</protocArtifact>
                     <!--
                     <protocArtifact>com.google.protobuf:protoc:3.25.8:exe:${os.detected.classifier}</protocArtifact> -->
                     <!-- <pluginId>grpc-java</pluginId>
