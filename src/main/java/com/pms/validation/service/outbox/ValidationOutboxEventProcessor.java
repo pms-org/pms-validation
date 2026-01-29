@@ -41,6 +41,15 @@ public class ValidationOutboxEventProcessor {
     @Value("${app.outgoing-valid-trades-topic}")
     private String validTradesTopic;
 
+    @Value("${app.incoming-trades-topic}")
+    private String incomingTradesTopic;
+
+    @Value("${spring.kafka.consumer.group-id}")
+    private String consumerGroup;
+
+    @Value("${spring.application.name}")
+    private String serviceName;
+
     @Transactional
     public ProcessingResult dispatchOnce() {
 
@@ -87,12 +96,16 @@ public class ValidationOutboxEventProcessor {
             try {
                 TradeEventProto proto = ProtoEntityMapper.toProto(outbox);
 
-                kafkaTemplate.send(validTradesTopic, proto.getPortfolioId(), proto).get();
+                var sendResult = kafkaTemplate.send(validTradesTopic, proto.getPortfolioId(), proto).get();
+                var metadata = sendResult.getRecordMetadata();
+                int partition = metadata.partition();
+                long offset = metadata.offset();
 
                 log.info("Event {} sent to kafka successfully.", proto);
 
+                // Don't Send trade completion event to RTTM again for same trade id
                 // Send trade completion event to RTTM
-                sendTradeCompletionEvent(outbox);
+                // sendTradeCompletionEvent(outbox, partition, offset);
 
                 successfulIds.add(outbox.getValidationOutboxId());
 
@@ -149,17 +162,21 @@ public class ValidationOutboxEventProcessor {
     /**
      * Send trade completion event to RTTM
      */
-    private void sendTradeCompletionEvent(ValidationOutboxEntity outbox) {
+    private void sendTradeCompletionEvent(ValidationOutboxEntity outbox, int partition, long offset) {
         try {
             TradeEventPayload event = TradeEventPayload.builder()
                     .tradeId(outbox.getTradeId().toString())
-                    .serviceName("pms-validation")
+                    .serviceName(serviceName)
                     .eventType(EventType.TRADE_VALIDATED)
                     .eventStage(EventStage.VALIDATED)
                     .eventStatus("OK")
-                    .sourceQueue("pms.validation.out.valid")
+                    .sourceQueue(incomingTradesTopic)
                     .targetQueue(validTradesTopic)
                     .message("Trade dispatched to downstream service")
+                    .topicName(validTradesTopic)
+                    .offsetValue(offset)
+                    .partitionId(partition)
+                    .consumerGroup(consumerGroup)
                     .build();
 
             rttmClient.sendTradeEvent(event);
@@ -176,8 +193,8 @@ public class ValidationOutboxEventProcessor {
         try {
             DlqEventPayload dlqEvent = DlqEventPayload.builder()
                     .tradeId(outbox.getTradeId().toString())
-                    .serviceName("pms-validation")
-                    .topicName("validation_outbox")
+                    .serviceName(serviceName)
+                    .topicName("validation_outbox") // change our own DLT Topic if needed which is not present
                     .originalTopic(validTradesTopic)
                     .reason(errorReason)
                     .eventStage(EventStage.VALIDATED)

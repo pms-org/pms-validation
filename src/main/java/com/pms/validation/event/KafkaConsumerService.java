@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -45,16 +46,22 @@ public class KafkaConsumerService {
     @Autowired
     private RttmClient rttmClient;
 
+    @Value("${spring.application.name}")
+    private String serviceName;
+
     // Batch consumer: receives a list of protobuf messages and manual ack
     @KafkaListener(id = "tradesListener", topics = "${app.incoming-trades-topic}", groupId = "${spring.kafka.consumer.group-id}", containerFactory = "protobufKafkaListenerContainerFactory")
     public void consume(List<TradeEventProto> messages, Acknowledgment ack,
-            @Header(KafkaHeaders.RECEIVED_PARTITION) int partition) {
+            @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
+            @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
+            @Header(KafkaHeaders.OFFSET) List<Long> offsets,
+            @Header(KafkaHeaders.GROUP_ID) String consumerGroup) {
 
         try {
             log.info("Received {} trade messages from partition {}", messages.size(), partition);
 
             // Convert to DTOs and delegate to batch processor
-            batchProcessingService.processBatch(messages);
+            batchProcessingService.processBatch(messages, partition, topic, offsets, consumerGroup);
 
             ack.acknowledge();
         } catch (CannotCreateTransactionException | DataAccessException ex) {
@@ -83,7 +90,7 @@ public class KafkaConsumerService {
         try {
             DlqEventPayload dlqEvent = DlqEventPayload.builder()
                     .tradeId(dltMessage.getTradeId())
-                    .serviceName("pms-validation")
+                    .serviceName(serviceName)
                     .topicName(dltTopic)
                     .originalTopic(originalTopic)
                     .reason("Deserialization error or max retries exceeded")

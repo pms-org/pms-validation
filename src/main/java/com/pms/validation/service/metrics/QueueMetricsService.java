@@ -1,5 +1,15 @@
 package com.pms.validation.service.metrics;
 
+import java.time.Duration;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -34,6 +44,12 @@ public class QueueMetricsService {
     @Value("${spring.kafka.consumer.group-id:pms-validation-cg}")
     private String consumerGroup;
 
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String bootstrapServers;
+
+    @Value("${spring.application.name}")
+    private String serviceName;
+
     /**
      * Send queue metrics every 30 seconds
      * In a production system, you would fetch actual offset values from Kafka
@@ -58,17 +74,28 @@ public class QueueMetricsService {
 
     /**
      * Send queue metric for a specific topic
-     * In production, fetch real offset values from Kafka using KafkaConsumer
      */
     private void sendMetricForTopic(String topicName, int partitionId) {
         try {
-            // These would normally be fetched from Kafka
-            // For now, using placeholder values
-            long producedOffset = System.currentTimeMillis() / 1000; // placeholder
-            long consumedOffset = producedOffset - 10; // placeholder
+            TopicPartition topicPartition = new TopicPartition(topicName, partitionId);
+
+            // Fetch real offsets from Kafka
+            long producedOffset = 0L;
+            long consumedOffset = 0L;
+
+            try (KafkaConsumer<String, String> consumer = createKafkaConsumer()) {
+                // Get the end offset (latest produced offset)
+                Map<TopicPartition, Long> endOffsets = consumer.endOffsets(Collections.singletonList(topicPartition));
+                producedOffset = endOffsets.getOrDefault(topicPartition, 0L);
+
+                // Get the committed offset (consumed offset) for this consumer group
+                OffsetAndMetadata committedOffset = consumer
+                        .committed(Collections.singleton(topicPartition), Duration.ofSeconds(5)).get(topicPartition);
+                consumedOffset = (committedOffset != null) ? committedOffset.offset() : 0L;
+            }
 
             QueueMetricPayload metric = QueueMetricPayload.builder()
-                    .serviceName("pms-validation")
+                    .serviceName(serviceName)
                     .topicName(topicName)
                     .partitionId(partitionId)
                     .producedOffset(producedOffset)
@@ -76,9 +103,23 @@ public class QueueMetricsService {
                     .consumerGroup(consumerGroup)
                     .build();
             rttmClient.sendQueueMetric(metric);
-            log.debug("Sent queue metric for topic {} partition {}", topicName, partitionId);
+            log.debug("Sent queue metric for topic {} partition {} - produced: {}, consumed: {}",
+                    topicName, partitionId, producedOffset, consumedOffset);
         } catch (Exception ex) {
             log.warn("Failed to send queue metric for {}: {}", topicName, ex.getMessage());
         }
+    }
+
+    /**
+     * Create a temporary Kafka consumer to query offsets
+     */
+    private KafkaConsumer<String, String> createKafkaConsumer() {
+        Properties props = new Properties();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroup);
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
+        return new KafkaConsumer<>(props);
     }
 }

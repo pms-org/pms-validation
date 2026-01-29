@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,8 +54,18 @@ public class ValidationBatchProcessingService {
     @Autowired
     private RttmClient rttmClient;
 
+    @Value("${app.outgoing-valid-trades-topic}")
+    private String validTradesTopic;
+
+    @Value("${app.outgoing-invalid-trades-topic}")
+    private String invalidTradesTopic;
+
+    @Value("${spring.application.name}")
+    private String serviceName;
+
     @Transactional
-    public void processBatch(List<TradeEventProto> messages) {
+    public void processBatch(List<TradeEventProto> messages, int partition, String topic, List<Long> offsets,
+            String consumerGroup) {
         log.info("Processing validation batch of {} trades.", messages.size());
 
         List<TradeDto> dtos = messages.stream()
@@ -70,7 +81,9 @@ public class ValidationBatchProcessingService {
         List<ValidationOutboxEntity> outboxToSave = new ArrayList<>();
         List<InvalidTradeEntity> invalidToSave = new ArrayList<>();
 
-        for (TradeDto dto : dtos) {
+        for (int i = 0; i < dtos.size(); i++) {
+            TradeDto dto = dtos.get(i);
+            Long offset = (offsets != null && i < offsets.size()) ? offsets.get(i) : 0L;
             // idempotency check
             if (dto.getTradeId() == null) {
                 log.warn("Skipping trade with null id");
@@ -96,10 +109,11 @@ public class ValidationBatchProcessingService {
 
                 if (decision.isValid()) {
                     outboxToSave.add(decision.getOutboxEntity());
-                    sendTradeValidationEvent(dto, true, null);
+                    sendTradeValidationEvent(dto, true, null, partition, offset, topic, consumerGroup);
                 } else {
                     invalidToSave.add(decision.getInvalidEntity());
-                    sendTradeValidationEvent(dto, false, decision.getInvalidEntity().getValidationErrors());
+                    sendTradeValidationEvent(dto, false, decision.getInvalidEntity().getValidationErrors(), partition,
+                            offset, topic, consumerGroup);
                 }
 
                 successfulIds.add(dto.getTradeId());
@@ -107,7 +121,7 @@ public class ValidationBatchProcessingService {
             } catch (Exception ex) {
                 log.error("Error evaluating trade {} in batch", dto.getTradeId(), ex);
                 // Send error event to RTTM
-                sendErrorEvent(dto, ex.getMessage());
+                sendErrorEvent(dto, ex.getMessage(), partition, offset, topic, consumerGroup);
                 throw ex; // let listener pause and handle
             }
         }
@@ -173,16 +187,21 @@ public class ValidationBatchProcessingService {
     /**
      * Send trade validation event to RTTM
      */
-    private void sendTradeValidationEvent(TradeDto trade, boolean valid, String errors) {
+    private void sendTradeValidationEvent(TradeDto trade, boolean valid, String errors, int partition, Long offset,
+            String topic, String consumerGroup) {
         try {
             TradeEventPayload event = TradeEventPayload.builder()
                     .tradeId(trade.getTradeId().toString())
-                    .serviceName("pms-validation")
+                    .topicName(topic)
+                    .offsetValue(offset)
+                    .partitionId(partition)
+                    .consumerGroup(consumerGroup)
+                    .serviceName(serviceName)
                     .eventType(EventType.TRADE_VALIDATED)
                     .eventStage(EventStage.VALIDATED)
-                    .eventStatus(valid ? "OK" : "ERROR")
-                    .sourceQueue("pms.validation.in")
-                    .targetQueue(valid ? "pms.validation.out.valid" : "pms.validation.out.invalid")
+                    .eventStatus(valid ? "OK" : "VALIDATION_FAILED")
+                    .sourceQueue(topic)
+                    .targetQueue(valid ? validTradesTopic : invalidTradesTopic)
                     .message(valid ? "Trade validation passed" : errors)
                     .build();
 
@@ -196,11 +215,12 @@ public class ValidationBatchProcessingService {
     /**
      * Send error event to RTTM when validation fails
      */
-    private void sendErrorEvent(TradeDto trade, String errorMessage) {
+    private void sendErrorEvent(TradeDto trade, String errorMessage, int partition, Long offset, String topic,
+            String consumerGroup) {
         try {
             ErrorEventPayload errorEvent = ErrorEventPayload.builder()
                     .tradeId(trade.getTradeId().toString())
-                    .serviceName("pms-validation")
+                    .serviceName(serviceName)
                     .errorType("VALIDATION_ERROR")
                     .errorMessage(errorMessage)
                     .eventStage(EventStage.VALIDATE)
