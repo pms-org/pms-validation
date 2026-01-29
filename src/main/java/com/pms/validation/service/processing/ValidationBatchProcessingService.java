@@ -223,7 +223,7 @@ public class ValidationBatchProcessingService {
                     .serviceName(serviceName)
                     .errorType("VALIDATION_ERROR")
                     .errorMessage(errorMessage)
-                    .eventStage(EventStage.VALIDATE)
+                    .eventStage(EventStage.VALIDATED)
                     .build();
 
             rttmClient.sendErrorEvent(errorEvent);

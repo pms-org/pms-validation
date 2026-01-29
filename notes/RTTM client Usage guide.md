@@ -146,7 +146,7 @@ rttmClient.sendErrorEvent(ErrorEventPayload.builder()
         .serviceName("pms-validation")
         .errorType("VALIDATION_ERROR")
         .errorMessage("Missing notional field")
-        .eventStage(EventStage.VALIDATE)
+        .eventStage(EventStage.VALIDATED)
         .build());
 
 // DLQ event (processing failure)
@@ -171,7 +171,7 @@ rttmClient.sendQueueMetric(QueueMetricPayload.builder()
 ```
 
 Notes:
-- `EventType` and `EventStage` enums provide type-safe event classification (e.g., `TRADE_VALIDATED`, `ENRICHED`, `VALIDATE`, `CONSUME`).
+- `EventType` and `EventStage` enums provide type-safe event classification (e.g., `TRADE_VALIDATED`, `ENRICHED`, `VALIDATED`, `CONSUME`).
 - All long text fields (message/reason/errorMessage) are auto-truncated to 1000 chars by the DTOs.
 - `eventTime`/`snapshotTime` default to `System.currentTimeMillis()` unless explicitly set.
 - In Kafka mode, the client uses tradeId or serviceName as keys to keep partitioning stable.
