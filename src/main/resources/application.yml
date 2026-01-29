@@ -79,7 +79,7 @@ schema:
     url: ${SCHEMA_REGISTRY_URL}
 
 server:
-  port: ${SERVER_PORT:8085}
+  port: ${SERVER_PORT:8083}
 
 app:
   incoming-trades-topic: ${INCOMING_TRADES_TOPIC}

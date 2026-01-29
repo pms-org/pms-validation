@@ -26,6 +26,6 @@ COPY --from=builder /app/target/pms-validation-*.jar app.jar
 ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
 
 # Expose Port
-EXPOSE 8085
+EXPOSE 8083
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
