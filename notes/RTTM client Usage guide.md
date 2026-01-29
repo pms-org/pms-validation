@@ -13,7 +13,7 @@ This library sends RTTM protobuf events (trade, DLQ, queue metric, error) over K
 <dependency>
     <groupId>com.pms</groupId>
     <artifactId>pms-rttm-client</artifactId>
-    <version>1.0.0</version>
+    <version>2.1.0</version>
 </dependency>
 ```
 
@@ -38,9 +38,6 @@ rttm:
         dlq-events: rttm.dlq.events
         queue-metrics: rttm.queue.metrics
         error-events: rttm.error.events
-    http:
-      base-url: https://rttm.example.com
-      api-key: ${RTTM_API_KEY:}
     send-timeout-ms: 3000
     retry:
       max-attempts: 3
@@ -118,24 +115,6 @@ rttm:
       retry:
          max-attempts: ${RTTM_RETRY_MAX_ATTEMPTS:3}
          backoff-ms: ${RTTM_RETRY_BACKOFF_MS:100}
-```
-
-### HTTP client (when Kafka is unavailable)
-```java
-RttmClientConfig config = RttmClientConfig.builder()
-        .mode("http")
-        .httpEndpointBaseUrl("https://rttm.example.com")
-        .httpApiKey(System.getenv("RTTM_API_KEY"))
-        .build();
-
-RttmClient rttmClient = HttpRttmClient.builder()
-        .config(config)
-        .build();
-```
-
-### No-op client (local dev)
-```java
-RttmClient rttmClient = new NoopRttmClient();
 ```
 
 ## How services should send data
