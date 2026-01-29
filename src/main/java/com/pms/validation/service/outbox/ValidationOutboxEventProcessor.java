@@ -3,6 +3,7 @@ package com.pms.validation.service.outbox;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,7 +38,8 @@ public class ValidationOutboxEventProcessor {
 
     private final RttmClient rttmClient;
 
-    private static final String TOPIC = "portfolio-risk-metrics"; // adjust as needed
+    @Value("${app.outgoing-valid-trades-topic}")
+    private String validTradesTopic;
 
     @Transactional
     public ProcessingResult dispatchOnce() {
@@ -85,7 +87,7 @@ public class ValidationOutboxEventProcessor {
             try {
                 TradeEventProto proto = ProtoEntityMapper.toProto(outbox);
 
-                kafkaTemplate.send(TOPIC, proto.getPortfolioId(), proto).get();
+                kafkaTemplate.send(validTradesTopic, proto.getPortfolioId(), proto).get();
 
                 log.info("Event {} sent to kafka successfully.", proto);
 
@@ -156,7 +158,7 @@ public class ValidationOutboxEventProcessor {
                     .eventStage(EventStage.VALIDATED)
                     .eventStatus("OK")
                     .sourceQueue("pms.validation.out.valid")
-                    .targetQueue(TOPIC)
+                    .targetQueue(validTradesTopic)
                     .message("Trade dispatched to downstream service")
                     .build();
 
@@ -176,7 +178,7 @@ public class ValidationOutboxEventProcessor {
                     .tradeId(outbox.getTradeId().toString())
                     .serviceName("pms-validation")
                     .topicName("validation_outbox")
-                    .originalTopic(TOPIC)
+                    .originalTopic(validTradesTopic)
                     .reason(errorReason)
                     .eventStage(EventStage.VALIDATED)
                     .build();
