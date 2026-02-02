@@ -128,3 +128,4 @@ public class QueueMetricsService {
             log.warn("Failed to send queue metric for {}: {}", topicName, ex.getMessage());
         }
     }
+}
