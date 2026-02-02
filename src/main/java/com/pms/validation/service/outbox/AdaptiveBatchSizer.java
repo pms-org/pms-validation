@@ -12,7 +12,7 @@ public class AdaptiveBatchSizer {
     }
 
     public void reset() {
-        current = 10;
+        current = 3;
     }
 
     public void adjust(long durationMs, int batchSize) {

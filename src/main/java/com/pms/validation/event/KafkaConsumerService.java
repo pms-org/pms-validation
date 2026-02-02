@@ -1,26 +1,24 @@
 package com.pms.validation.event;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
+import java.util.concurrent.LinkedBlockingDeque;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
-import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.CannotCreateTransactionException;
 
-import com.pms.validation.dto.TradeDto;
-import com.pms.validation.mapper.ProtoDTOMapper;
 import com.pms.validation.proto.TradeEventProto;
-import com.pms.validation.service.domain.TradeIdempotencyService;
 import com.pms.validation.service.health.DbHealthMonitor;
-import com.pms.validation.service.processing.ValidationBatchProcessingService;
+import com.pms.validation.wrapper.PollBatch;
+import com.pms.validation.service.BatchProcessor;
 import com.pms.rttm.client.clients.RttmClient;
 import com.pms.rttm.client.dto.DlqEventPayload;
 import com.pms.rttm.client.enums.EventStage;
@@ -32,10 +30,12 @@ import lombok.extern.slf4j.Slf4j;
 public class KafkaConsumerService {
 
     @Autowired
-    private ValidationBatchProcessingService batchProcessingService;
+    private LinkedBlockingDeque<PollBatch> buffer;
 
     @Autowired
-    private TradeIdempotencyService tradeIdempotencyService;
+    private BatchProcessor batchProcessor;
+
+    
 
     @Autowired
     private KafkaListenerEndpointRegistry registry;
@@ -56,18 +56,30 @@ public class KafkaConsumerService {
             @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
             @Header(KafkaHeaders.OFFSET) List<Long> offsets,
             @Header(KafkaHeaders.GROUP_ID) String consumerGroup) {
-
         try {
             log.info("Received {} trade messages from partition {}", messages.size(), partition);
 
-            // Convert to DTOs and delegate to batch processor
-            batchProcessingService.processBatch(messages, partition, topic, offsets, consumerGroup);
+            // Enqueue the poll into the local bounded buffer for coalesced batching
+            buffer.offer(new PollBatch(messages, ack));
 
-            ack.acknowledge();
+            int totalMessagesInBuffer = buffer.stream()
+        .mapToInt(poll -> poll.getTradeProtos().size())
+        .sum();
+
+log.info("Enqueued {} trades from partition {}. Total messages in buffer now: {}",
+        messages.size(), partition, totalMessagesInBuffer);
+
+            // If buffer is growing large, instruct batch processor to pause consumer
+            if (buffer.size() >= 40) {
+                batchProcessor.handleConsumerThread(false);
+            }
+
+            // Trigger a flush if thresholds are met (async)
+            batchProcessor.checkAndFlush();
+
         } catch (CannotCreateTransactionException | DataAccessException ex) {
             log.error("DB Down -->  pausing Kafka consumer", ex);
             // Pause the consumer on DB failures or connectivity issues
-            // Stop the listener and start monitoring to resume when DB is back
             var container = registry.getListenerContainer("tradesListener");
             if (container != null) {
                 container.stop();

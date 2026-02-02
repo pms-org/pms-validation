@@ -66,7 +66,9 @@ public class ValidationBatchProcessingService {
     @Transactional
     public void processBatch(List<TradeEventProto> messages, int partition, String topic, List<Long> offsets,
             String consumerGroup) {
-        log.info("Processing validation batch of {} trades.", messages.size());
+        log.info("Processing validation batch of {} trades.", messages.size(), messages.stream()
+                 .map(m -> m.getTradeId().toString())  // convert TradeEventProto UUID to string
+                 .collect(Collectors.joining(", ")));
 
         List<TradeDto> dtos = messages.stream()
                 .map(ProtoDTOMapper::toDto)

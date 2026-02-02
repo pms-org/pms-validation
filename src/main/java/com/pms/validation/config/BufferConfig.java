@@ -1,0 +1,21 @@
+package com.pms.validation.config;
+
+import java.util.concurrent.LinkedBlockingDeque;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import com.pms.validation.wrapper.PollBatch;
+
+@Configuration
+public class BufferConfig {
+
+    @Value("${app.buffer.size:1000}")
+    private int bufferSize;
+
+    @Bean
+    public LinkedBlockingDeque<PollBatch> protoBuffer() {
+        return new LinkedBlockingDeque<PollBatch>(bufferSize);
+    }
+}
