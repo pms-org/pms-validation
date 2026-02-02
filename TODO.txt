@@ -1,4 +1,1 @@
-TODO: Improve Kafka Configs
-TODO: Advisory locks - research
-
-TODO: Update rttm clients code to send crct data. like enums, get lag info from kafka.
+TODO: Handle empty exception blocks 

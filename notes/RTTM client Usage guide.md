@@ -46,6 +46,57 @@ rttm:
 
 ## Creating a client
 ### Kafka client (preferred when Kafka is reachable)
+
+#### Step 1: Create MessageLite Producer Configuration
+The RTTM client requires a `KafkaTemplate<String, MessageLite>` to send different protobuf message types (trade events, DLQ events, queue metrics, error events). Create a dedicated producer factory and KafkaTemplate bean:
+
+```java
+@Configuration
+public class KafkaConfig {
+
+      @Value("${spring.kafka.bootstrap-servers}")
+      private String kafkaBootstrapServers;
+
+      @Value("${schema.registry.url}")
+      private String schemaRegistryUrl;
+
+      // Generic ProducerFactory for RTTM Client to send any MessageLite (protobuf messages)
+      @Bean
+      ProducerFactory<String, MessageLite> messageLiteProducerFactory() {
+            Map<String, Object> props = new HashMap<>();
+            props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrapServers);
+            props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+            props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                        io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer.class);
+            props.put("schema.registry.url", schemaRegistryUrl);
+
+            // Retry configuration
+            props.put(ProducerConfig.RETRIES_CONFIG, 5);
+            props.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, 1000);
+            props.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG, 30000);
+            props.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, 15000);
+
+            // Safe producer (no duplicates)
+            props.put(ProducerConfig.ACKS_CONFIG, "all");
+            props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
+
+            return new DefaultKafkaProducerFactory<>(props);
+      }
+
+      @Bean
+      KafkaTemplate<String, MessageLite> messageLiteKafkaTemplate() {
+            return new KafkaTemplate<>(messageLiteProducerFactory());
+      }
+}
+```
+
+**Key configuration points:**
+- Use `KafkaProtobufSerializer` for the value serializer to handle protobuf messages
+- Configure schema registry URL for protobuf schema validation
+- Enable idempotence (`ENABLE_IDEMPOTENCE_CONFIG=true`) and set `ACKS_CONFIG=all` for exactly-once semantics
+- Set appropriate retry and timeout values for resilience
+
+#### Step 2: Create RTTM Client Configuration
 Load values from `application.yml` (which itself reads env vars with fallbacks) using `@Value`:
 
 ```java

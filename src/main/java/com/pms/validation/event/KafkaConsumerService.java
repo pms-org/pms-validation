@@ -53,12 +53,16 @@ public class KafkaConsumerService {
     @KafkaListener(id = "tradesListener", topics = "${app.incoming-trades-topic}", groupId = "${spring.kafka.consumer.group-id}", containerFactory = "protobufKafkaListenerContainerFactory")
     public void consume(List<TradeEventProto> messages, Acknowledgment ack,
             @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
-            @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
+            @Header(KafkaHeaders.RECEIVED_TOPIC) List<String> topics,
             @Header(KafkaHeaders.OFFSET) List<Long> offsets,
             @Header(KafkaHeaders.GROUP_ID) String consumerGroup) {
 
         try {
             log.info("Received {} trade messages from partition {}", messages.size(), partition);
+
+            // Extract single topic name from list (all messages in batch should be from
+            // same topic)
+            String topic = (topics != null && !topics.isEmpty()) ? topics.get(0) : "unknown-topic";
 
             // Convert to DTOs and delegate to batch processor
             batchProcessingService.processBatch(messages, partition, topic, offsets, consumerGroup);

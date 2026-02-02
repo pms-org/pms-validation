@@ -82,9 +82,9 @@ The following stock symbols are supported in the validation system:
 {
   "tradeId": "550e8400-e29b-41d4-a716-446655440003",
   "portfolioId": "7ecae4ee-a6df-4237-8e9a-5e4a5e417fa3",
-  "symbol": "TSLA",
+  "symbol": "WMT",
   "side": "BUY",
-  "pricePerStock": 245.25,
+  "pricePerStock": 162.25,
   "quantity": 10000,
   "timestamp": "2026-01-28T14:45:00"
 }
@@ -220,7 +220,7 @@ The following stock symbols are supported in the validation system:
 {
   "tradeId": "550e8400-e29b-41d4-a716-446655440105",
   "portfolioId": "a1d62557-221d-4799-bfba-4d7215dcdac3",
-  "symbol": "TSLA",
+  "symbol": "WMT",
   "side": "BUY",
   "pricePerStock": 0,
   "quantity": 100,
@@ -294,11 +294,11 @@ The following stock symbols are supported in the validation system:
 
 #### ✅ Valid Batch Examples
 
-#### Mixed Portfolio Trades (5 trades)
+#### Mixed Portfolio Trades (15 trades)
 ```json
 [
   {
-    "tradeId": "550e8400-e29b-41d4-a716-446655440010",
+    "tradeId": "{{$string.uuid}}",
     "portfolioId": "b23d70cf-6d7a-48b5-8e8c-4eda8f4d611d",
     "symbol": "AAPL",
     "side": "BUY",
@@ -307,7 +307,7 @@ The following stock symbols are supported in the validation system:
     "timestamp": "2026-01-28T10:00:00"
   },
   {
-    "tradeId": "550e8400-e29b-41d4-a716-446655440011",
+    "tradeId": "{{$string.uuid}}",
     "portfolioId": "b23d70cf-6d7a-48b5-8e8c-4eda8f4d611d",
     "symbol": "AAPL",
     "side": "SELL",
@@ -316,8 +316,8 @@ The following stock symbols are supported in the validation system:
     "timestamp": "2026-01-28T10:05:00"
   },
   {
-    "tradeId": "550e8400-e29b-41d4-a716-446655440012",
-    "portfolioId": "b23d70cf-6d7a-48b5-8e8c-4eda8f4d611d",
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "7839ee86-6527-43ed-94d6-53dadda2bd9a",
     "symbol": "MSFT",
     "side": "BUY",
     "pricePerStock": 420.00,
@@ -325,31 +325,121 @@ The following stock symbols are supported in the validation system:
     "timestamp": "2026-01-28T10:10:00"
   },
   {
-    "tradeId": "550e8400-e29b-41d4-a716-446655440013",
-    "portfolioId": "b23d70cf-6d7a-48b5-8e8c-4eda8f4d611d",
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "7d08a041-6aed-421c-b895-1d94d4401b79",
+    "symbol": "GOOGL",
+    "side": "BUY",
+    "pricePerStock": 2850.75,
+    "quantity": 30,
+    "timestamp": "2026-01-28T10:15:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "7ecae4ee-a6df-4237-8e9a-5e4a5e417fa3",
+    "symbol": "WMT",
+    "side": "SELL",
+    "pricePerStock": 162.50,
+    "quantity": 200,
+    "timestamp": "2026-01-28T10:20:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "8deeeb23-8862-4e29-8626-e538dddd868f",
     "symbol": "AMZN",
     "side": "BUY",
     "pricePerStock": 155.00,
     "quantity": 150,
-    "timestamp": "2026-01-28T10:15:00"
+    "timestamp": "2026-01-28T10:25:00"
   },
   {
-    "tradeId": "550e8400-e29b-41d4-a716-446655440014",
-    "portfolioId": "b23d70cf-6d7a-48b5-8e8c-4eda8f4d611d",
-    "symbol": "TSLA",
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "a1d62557-221d-4799-bfba-4d7215dcdac3",
+    "symbol": "NVDA",
+    "side": "BUY",
+    "pricePerStock": 875.50,
+    "quantity": 75,
+    "timestamp": "2026-01-28T10:30:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "b94926b8-4919-4279-8470-1f3ec5b1b0fc",
+    "symbol": "META",
+    "side": "BUY",
+    "pricePerStock": 475.25,
+    "quantity": 60,
+    "timestamp": "2026-01-28T10:35:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "ca7377ab-2596-47a3-9c3d-4089206fa3de",
+    "symbol": "NFLX",
     "side": "SELL",
-    "pricePerStock": 245.50,
+    "pricePerStock": 485.15,
+    "quantity": 45,
+    "timestamp": "2026-01-28T10:40:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "d3a485c8-3e2f-4fa3-a823-254748942200",
+    "symbol": "AMD",
+    "side": "BUY",
+    "pricePerStock": 185.50,
     "quantity": 200,
-    "timestamp": "2026-01-28T10:20:00"
+    "timestamp": "2026-01-28T10:45:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "e9fc6225-6845-4c91-815f-ba3e9ea06e21",
+    "symbol": "INTC",
+    "side": "BUY",
+    "pricePerStock": 48.25,
+    "quantity": 500,
+    "timestamp": "2026-01-28T10:50:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "b23d70cf-6d7a-48b5-8e8c-4eda8f4d611d",
+    "symbol": "IBM",
+    "side": "SELL",
+    "pricePerStock": 195.75,
+    "quantity": 120,
+    "timestamp": "2026-01-28T10:55:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "7839ee86-6527-43ed-94d6-53dadda2bd9a",
+    "symbol": "ORCL",
+    "side": "BUY",
+    "pricePerStock": 112.50,
+    "quantity": 300,
+    "timestamp": "2026-01-28T11:00:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "7d08a041-6aed-421c-b895-1d94d4401b79",
+    "symbol": "JPM",
+    "side": "BUY",
+    "pricePerStock": 189.25,
+    "quantity": 250,
+    "timestamp": "2026-01-28T11:05:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "7ecae4ee-a6df-4237-8e9a-5e4a5e417fa3",
+    "symbol": "BAC",
+    "side": "SELL",
+    "pricePerStock": 35.50,
+    "quantity": 800,
+    "timestamp": "2026-01-28T11:10:00"
   }
 ]
 ```
 
-#### Multiple Portfolios Batch (3 trades, different portfolios)
+#### Multiple Portfolios Batch (15 trades, different portfolios)
 ```json
 [
   {
-    "tradeId": "550e8400-e29b-41d4-a716-446655440020",
+    "tradeId": "{{$string.uuid}}",
     "portfolioId": "b94926b8-4919-4279-8470-1f3ec5b1b0fc",
     "symbol": "NVDA",
     "side": "BUY",
@@ -358,7 +448,7 @@ The following stock symbols are supported in the validation system:
     "timestamp": "2026-01-28T11:00:00"
   },
   {
-    "tradeId": "550e8400-e29b-41d4-a716-446655440021",
+    "tradeId": "{{$string.uuid}}",
     "portfolioId": "ca7377ab-2596-47a3-9c3d-4089206fa3de",
     "symbol": "AMD",
     "side": "BUY",
@@ -367,22 +457,130 @@ The following stock symbols are supported in the validation system:
     "timestamp": "2026-01-28T11:05:00"
   },
   {
-    "tradeId": "550e8400-e29b-41d4-a716-446655440022",
-    "portfolioId": "d164c037-cf39-457e-99fb-9ec0b4cd47d8",
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "d3a485c8-3e2f-4fa3-a823-254748942200",
     "symbol": "IBM",
     "side": "SELL",
     "pricePerStock": 195.75,
     "quantity": 500,
     "timestamp": "2026-01-28T11:10:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "e9fc6225-6845-4c91-815f-ba3e9ea06e21",
+    "symbol": "WMT",
+    "side": "BUY",
+    "pricePerStock": 162.75,
+    "quantity": 150,
+    "timestamp": "2026-01-28T11:15:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "b23d70cf-6d7a-48b5-8e8c-4eda8f4d611d",
+    "symbol": "AAPL",
+    "side": "SELL",
+    "pricePerStock": 176.00,
+    "quantity": 80,
+    "timestamp": "2026-01-28T11:20:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "7839ee86-6527-43ed-94d6-53dadda2bd9a",
+    "symbol": "MSFT",
+    "side": "BUY",
+    "pricePerStock": 421.50,
+    "quantity": 95,
+    "timestamp": "2026-01-28T11:25:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "7d08a041-6aed-421c-b895-1d94d4401b79",
+    "symbol": "GOOGL",
+    "side": "BUY",
+    "pricePerStock": 2860.00,
+    "quantity": 40,
+    "timestamp": "2026-01-28T11:30:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "7ecae4ee-a6df-4237-8e9a-5e4a5e417fa3",
+    "symbol": "WMT",
+    "side": "SELL",
+    "pricePerStock": 162.75,
+    "quantity": 175,
+    "timestamp": "2026-01-28T11:35:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "8deeeb23-8862-4e29-8626-e538dddd868f",
+    "symbol": "NFLX",
+    "side": "BUY",
+    "pricePerStock": 486.50,
+    "quantity": 110,
+    "timestamp": "2026-01-28T11:40:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "a1d62557-221d-4799-bfba-4d7215dcdac3",
+    "symbol": "META",
+    "side": "BUY",
+    "pricePerStock": 476.00,
+    "quantity": 85,
+    "timestamp": "2026-01-28T11:45:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "b94926b8-4919-4279-8470-1f3ec5b1b0fc",
+    "symbol": "AMZN",
+    "side": "SELL",
+    "pricePerStock": 154.50,
+    "quantity": 220,
+    "timestamp": "2026-01-28T11:50:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "ca7377ab-2596-47a3-9c3d-4089206fa3de",
+    "symbol": "INTC",
+    "side": "BUY",
+    "pricePerStock": 48.75,
+    "quantity": 600,
+    "timestamp": "2026-01-28T11:55:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "d3a485c8-3e2f-4fa3-a823-254748942200",
+    "symbol": "ORCL",
+    "side": "BUY",
+    "pricePerStock": 113.00,
+    "quantity": 350,
+    "timestamp": "2026-01-28T12:00:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "e9fc6225-6845-4c91-815f-ba3e9ea06e21",
+    "symbol": "JPM",
+    "side": "SELL",
+    "pricePerStock": 188.50,
+    "quantity": 180,
+    "timestamp": "2026-01-28T12:05:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "b23d70cf-6d7a-48b5-8e8c-4eda8f4d611d",
+    "symbol": "BAC",
+    "side": "BUY",
+    "pricePerStock": 36.00,
+    "quantity": 1200,
+    "timestamp": "2026-01-28T12:10:00"
   }
 ]
 ```
 
-#### Technology Portfolio (4 trades)
+#### Technology Portfolio (15 trades)
 ```json
 [
   {
-    "tradeId": "550e8400-e29b-41d4-a716-446655440023",
+    "tradeId": "{{$string.uuid}}",
     "portfolioId": "d3a485c8-3e2f-4fa3-a823-254748942200",
     "symbol": "INTC",
     "side": "BUY",
@@ -391,7 +589,7 @@ The following stock symbols are supported in the validation system:
     "timestamp": "2026-01-28T11:15:00"
   },
   {
-    "tradeId": "550e8400-e29b-41d4-a716-446655440024",
+    "tradeId": "{{$string.uuid}}",
     "portfolioId": "d3a485c8-3e2f-4fa3-a823-254748942200",
     "symbol": "ORCL",
     "side": "BUY",
@@ -400,7 +598,7 @@ The following stock symbols are supported in the validation system:
     "timestamp": "2026-01-28T11:20:00"
   },
   {
-    "tradeId": "550e8400-e29b-41d4-a716-446655440025",
+    "tradeId": "{{$string.uuid}}",
     "portfolioId": "d3a485c8-3e2f-4fa3-a823-254748942200",
     "symbol": "NFLX",
     "side": "BUY",
@@ -409,22 +607,121 @@ The following stock symbols are supported in the validation system:
     "timestamp": "2026-01-28T11:25:00"
   },
   {
-    "tradeId": "550e8400-e29b-41d4-a716-446655440026",
+    "tradeId": "{{$string.uuid}}",
     "portfolioId": "d3a485c8-3e2f-4fa3-a823-254748942200",
     "symbol": "META",
     "side": "SELL",
     "pricePerStock": 475.25,
     "quantity": 120,
     "timestamp": "2026-01-28T11:30:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "d3a485c8-3e2f-4fa3-a823-254748942200",
+    "symbol": "NVDA",
+    "side": "BUY",
+    "pricePerStock": 876.50,
+    "quantity": 90,
+    "timestamp": "2026-01-28T11:35:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "d3a485c8-3e2f-4fa3-a823-254748942200",
+    "symbol": "AMD",
+    "side": "BUY",
+    "pricePerStock": 186.00,
+    "quantity": 250,
+    "timestamp": "2026-01-28T11:40:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "d3a485c8-3e2f-4fa3-a823-254748942200",
+    "symbol": "AAPL",
+    "side": "BUY",
+    "pricePerStock": 175.75,
+    "quantity": 180,
+    "timestamp": "2026-01-28T11:45:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "d3a485c8-3e2f-4fa3-a823-254748942200",
+    "symbol": "MSFT",
+    "side": "SELL",
+    "pricePerStock": 419.50,
+    "quantity": 65,
+    "timestamp": "2026-01-28T11:50:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "d3a485c8-3e2f-4fa3-a823-254748942200",
+    "symbol": "GOOGL",
+    "side": "BUY",
+    "pricePerStock": 2855.00,
+    "quantity": 35,
+    "timestamp": "2026-01-28T11:55:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "d3a485c8-3e2f-4fa3-a823-254748942200",
+    "symbol": "IBM",
+    "side": "BUY",
+    "pricePerStock": 196.25,
+    "quantity": 220,
+    "timestamp": "2026-01-28T12:00:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "d3a485c8-3e2f-4fa3-a823-254748942200",
+    "symbol": "AMZN",
+    "side": "BUY",
+    "pricePerStock": 155.50,
+    "quantity": 165,
+    "timestamp": "2026-01-28T12:05:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "d3a485c8-3e2f-4fa3-a823-254748942200",
+    "symbol": "INTC",
+    "side": "SELL",
+    "pricePerStock": 48.50,
+    "quantity": 500,
+    "timestamp": "2026-01-28T12:10:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "d3a485c8-3e2f-4fa3-a823-254748942200",
+    "symbol": "ORCL",
+    "side": "SELL",
+    "pricePerStock": 112.75,
+    "quantity": 200,
+    "timestamp": "2026-01-28T12:15:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "d3a485c8-3e2f-4fa3-a823-254748942200",
+    "symbol": "NFLX",
+    "side": "BUY",
+    "pricePerStock": 486.00,
+    "quantity": 95,
+    "timestamp": "2026-01-28T12:20:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "d3a485c8-3e2f-4fa3-a823-254748942200",
+    "symbol": "META",
+    "side": "BUY",
+    "pricePerStock": 476.50,
+    "quantity": 140,
+    "timestamp": "2026-01-28T12:25:00"
   }
 ]
 ```
 
-#### Financial Sector Batch (2 trades)
+#### Financial Sector Batch (15 trades)
 ```json
 [
   {
-    "tradeId": "550e8400-e29b-41d4-a716-446655440027",
+    "tradeId": "{{$string.uuid}}",
     "portfolioId": "e9fc6225-6845-4c91-815f-ba3e9ea06e21",
     "symbol": "BAC",
     "side": "BUY",
@@ -433,13 +730,130 @@ The following stock symbols are supported in the validation system:
     "timestamp": "2026-01-28T11:35:00"
   },
   {
-    "tradeId": "550e8400-e29b-41d4-a716-446655440028",
+    "tradeId": "{{$string.uuid}}",
     "portfolioId": "e9fc6225-6845-4c91-815f-ba3e9ea06e21",
     "symbol": "JPM",
     "side": "BUY",
     "pricePerStock": 189.75,
     "quantity": 250,
     "timestamp": "2026-01-28T11:40:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "e9fc6225-6845-4c91-815f-ba3e9ea06e21",
+    "symbol": "BAC",
+    "side": "SELL",
+    "pricePerStock": 35.75,
+    "quantity": 500,
+    "timestamp": "2026-01-28T11:45:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "e9fc6225-6845-4c91-815f-ba3e9ea06e21",
+    "symbol": "JPM",
+    "side": "BUY",
+    "pricePerStock": 190.00,
+    "quantity": 300,
+    "timestamp": "2026-01-28T11:50:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "e9fc6225-6845-4c91-815f-ba3e9ea06e21",
+    "symbol": "BAC",
+    "side": "BUY",
+    "pricePerStock": 35.60,
+    "quantity": 1500,
+    "timestamp": "2026-01-28T11:55:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "e9fc6225-6845-4c91-815f-ba3e9ea06e21",
+    "symbol": "JPM",
+    "side": "SELL",
+    "pricePerStock": 189.50,
+    "quantity": 150,
+    "timestamp": "2026-01-28T12:00:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "e9fc6225-6845-4c91-815f-ba3e9ea06e21",
+    "symbol": "BAC",
+    "side": "BUY",
+    "pricePerStock": 35.80,
+    "quantity": 1800,
+    "timestamp": "2026-01-28T12:05:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "e9fc6225-6845-4c91-815f-ba3e9ea06e21",
+    "symbol": "JPM",
+    "side": "BUY",
+    "pricePerStock": 190.25,
+    "quantity": 400,
+    "timestamp": "2026-01-28T12:10:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "e9fc6225-6845-4c91-815f-ba3e9ea06e21",
+    "symbol": "BAC",
+    "side": "SELL",
+    "pricePerStock": 36.00,
+    "quantity": 800,
+    "timestamp": "2026-01-28T12:15:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "e9fc6225-6845-4c91-815f-ba3e9ea06e21",
+    "symbol": "JPM",
+    "side": "BUY",
+    "pricePerStock": 189.00,
+    "quantity": 350,
+    "timestamp": "2026-01-28T12:20:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "e9fc6225-6845-4c91-815f-ba3e9ea06e21",
+    "symbol": "BAC",
+    "side": "BUY",
+    "pricePerStock": 35.65,
+    "quantity": 2200,
+    "timestamp": "2026-01-28T12:25:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "e9fc6225-6845-4c91-815f-ba3e9ea06e21",
+    "symbol": "JPM",
+    "side": "SELL",
+    "pricePerStock": 190.50,
+    "quantity": 200,
+    "timestamp": "2026-01-28T12:30:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "e9fc6225-6845-4c91-815f-ba3e9ea06e21",
+    "symbol": "BAC",
+    "side": "BUY",
+    "pricePerStock": 35.70,
+    "quantity": 1600,
+    "timestamp": "2026-01-28T12:35:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "e9fc6225-6845-4c91-815f-ba3e9ea06e21",
+    "symbol": "JPM",
+    "side": "BUY",
+    "pricePerStock": 189.25,
+    "quantity": 280,
+    "timestamp": "2026-01-28T12:40:00"
+  },
+  {
+    "tradeId": "{{$string.uuid}}",
+    "portfolioId": "e9fc6225-6845-4c91-815f-ba3e9ea06e21",
+    "symbol": "BAC",
+    "side": "SELL",
+    "pricePerStock": 36.10,
+    "quantity": 900,
+    "timestamp": "2026-01-28T12:45:00"
   }
 ]
 ```
@@ -497,9 +911,9 @@ The following stock symbols are supported in the validation system:
   {
     "tradeId": "550e8400-e29b-41d4-a716-446655440205",
     "portfolioId": "invalid-id",
-    "symbol": "TSLA",
+    "symbol": "WMT",
     "side": "INVALID",
-    "pricePerStock": 245.00,
+    "pricePerStock": 162.00,
     "quantity": 100,
     "timestamp": "2026-01-28T10:10:00"
   }
@@ -790,7 +1204,7 @@ These scenarios demonstrate realistic trading patterns using only supported stoc
 ]
 ```
 
-### Scenario 3: Position Reduction in Tesla
+### Scenario 3: Position Reduction in Amazon
 **Use Case:** Reducing exposure to a particular stock
 
 ```json
@@ -798,27 +1212,27 @@ These scenarios demonstrate realistic trading patterns using only supported stoc
   {
     "tradeId": "550e8400-e29b-41d4-a716-446655443001",
     "portfolioId": "7ecae4ee-a6df-4237-8e9a-5e4a5e417fa3",
-    "symbol": "TSLA",
+    "symbol": "AMZN",
     "side": "SELL",
-    "pricePerStock": 245.00,
+    "pricePerStock": 155.00,
     "quantity": 100,
     "timestamp": "2026-01-28T11:00:00"
   },
   {
     "tradeId": "550e8400-e29b-41d4-a716-446655443002",
     "portfolioId": "7ecae4ee-a6df-4237-8e9a-5e4a5e417fa3",
-    "symbol": "TSLA",
+    "symbol": "AMZN",
     "side": "SELL",
-    "pricePerStock": 244.50,
+    "pricePerStock": 154.50,
     "quantity": 100,
     "timestamp": "2026-01-28T11:30:00"
   },
   {
     "tradeId": "550e8400-e29b-41d4-a716-446655443003",
     "portfolioId": "7ecae4ee-a6df-4237-8e9a-5e4a5e417fa3",
-    "symbol": "TSLA",
+    "symbol": "AMZN",
     "side": "SELL",
-    "pricePerStock": 243.75,
+    "pricePerStock": 153.75,
     "quantity": 50,
     "timestamp": "2026-01-28T12:00:00"
   }
@@ -1052,7 +1466,7 @@ WMT
 | AMZN   | $150-160 | Technology/Retail |
 | META   | $470-480 | Technology |
 | NVDA   | $870-890 | Technology |
-| TSLA   | $240-250 | Automotive/Tech |
+
 | NFLX   | $480-490 | Technology/Media |
 | AMD    | $180-190 | Technology |
 | INTC   | $45-50 | Technology |
@@ -1070,7 +1484,7 @@ WMT
 
 1. **tradeId**: Valid UUID format
 2. **portfolioId**: Must be one of the valid portfolio IDs provided
-3. **symbol**: Must be one of the 15 supported stocks (AAPL, MSFT, GOOGL, AMZN, META, NVDA, TSLA, NFLX, AMD, INTC, IBM, ORCL, BAC, JPM, WMT)
+3. **symbol**: Must be one of the 14 supported stocks (AAPL, MSFT, GOOGL, AMZN, META, NVDA, NFLX, AMD, INTC, IBM, ORCL, BAC, JPM, WMT)
 4. **side**: Must be either "BUY" or "SELL"
 5. **pricePerStock**: Must be > 0, supports up to 6 decimal places
 6. **quantity**: Must be > 0, long integer
@@ -1092,7 +1506,7 @@ WMT
 
 ### Test All Valid Supported Stocks (PowerShell)
 ```powershell
-$stocks = @("AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA", "NFLX", "AMD", "INTC", "IBM", "ORCL", "BAC", "JPM", "WMT")
+$stocks = @("AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "NFLX", "AMD", "INTC", "IBM", "ORCL", "BAC", "JPM", "WMT")
 
 foreach ($stock in $stocks) {
     $body = @{
@@ -1141,7 +1555,7 @@ Invoke-RestMethod -Uri "http://localhost:8080/trade-simulator/simulate" `
 3. **Side Values**: Only `BUY` or `SELL` are valid (case-sensitive)
 4. **Decimal Precision**: `pricePerStock` supports up to 6 decimal places
 5. **Quantity**: Must be a positive long integer
-6. **Supported Stocks Only**: The system validates against a whitelist of 15 supported stocks
+6. **Supported Stocks Only**: The system validates against a whitelist of 14 supported stocks
 7. **Valid Portfolio IDs**: Ensure portfolio IDs exist in the system before submitting trades
 
 ---
