@@ -59,7 +59,7 @@ spring:
 
 rttm:
   client:
-    mode: ${RTTM_MODE:kafka}  # kafka | http | noop
+    mode: ${RTTM_MODE:kafka} 
     kafka:
       bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
       topics:

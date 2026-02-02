@@ -59,13 +59,17 @@ public class QueueMetricsService {
     public void sendQueueMetrics() {
         try (KafkaConsumer<String, String> consumer = createKafkaConsumer()) {
             // Send metrics for incoming topic
-            sendMetricsForAllPartitions(consumer, incomingTopic);
+            // Every service sends metrics for their outgoing service
+            // Don't send cuz monitoring incoming topic is not our job, this topic is previous service's job 
+            // (as this topic is their outgoing topic)
+            // sendMetricsForAllPartitions(consumer, incomingTopic);
 
             // Send metrics for valid trades topic
             sendMetricsForAllPartitions(consumer, validTradesTopic);
 
             // Send metrics for invalid trades topic
-            sendMetricsForAllPartitions(consumer, invalidTradesTopic);
+            // Don't send cuz invalid trades is not in pipeline
+            // sendMetricsForAllPartitions(consumer, invalidTradesTopic);
 
             log.debug("Queue metrics sent to RTTM successfully");
         } catch (Exception ex) {
@@ -107,7 +111,8 @@ public class QueueMetricsService {
             long producedOffset = endOffsets.getOrDefault(topicPartition, 0L);
 
             // Get the committed offset (consumed offset) for this consumer group
-            OffsetAndMetadata committedOffset = consumer.committed(Collections.singleton(topicPartition), Duration.ofSeconds(5)).get(topicPartition);
+            OffsetAndMetadata committedOffset = consumer
+                    .committed(Collections.singleton(topicPartition), Duration.ofSeconds(5)).get(topicPartition);
             long consumedOffset = (committedOffset != null) ? committedOffset.offset() : 0L;
 
             QueueMetricPayload metric = QueueMetricPayload.builder()
