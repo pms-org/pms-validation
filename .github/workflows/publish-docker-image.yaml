@@ -32,10 +32,10 @@ jobs:
       - name: Set image name
         id: set_image
         run: |
-          # Use Docker Hub username to construct the image repo (e.g. "myuser/pms-trade-capture")
+          # Use Docker Hub username to construct the image repo (e.g. "myuser/pms-validation")
           # This ensures we push to your personal Docker Hub account, not the GitHub org
           if [ -n "${{ secrets.DOCKERHUB_USERNAME }}" ]; then
-            echo "IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/pms-trade-capture" >> "$GITHUB_OUTPUT"
+            echo "IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/pms-validation" >> "$GITHUB_OUTPUT"
           else
             echo "Error: DOCKERHUB_USERNAME secret is required"
             exit 1
@@ -56,6 +56,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: docker/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
