@@ -4,14 +4,11 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -34,20 +31,20 @@ public class QueueMetricsService {
     @Autowired
     private RttmClient rttmClient;
 
-    @Value("${app.incoming-trades-topic:pms.validation.in}")
+    @Autowired
+    private KafkaConsumer<String, String> metricsConsumer;
+
+    @Value("${app.incoming-trades-topic}")
     private String incomingTopic;
 
-    @Value("${app.outgoing-valid-trades-topic:pms.validation.out.valid}")
+    @Value("${app.outgoing-valid-trades-topic}")
     private String validTradesTopic;
 
-    @Value("${app.outgoing-invalid-trades-topic:pms.validation.out.invalid}")
+    @Value("${app.outgoing-invalid-trades-topic}")
     private String invalidTradesTopic;
 
-    @Value("${spring.kafka.consumer.group-id:pms-validation-cg}")
+    @Value("${spring.kafka.consumer.group-id}")
     private String consumerGroup;
-
-    @Value("${spring.kafka.bootstrap-servers}")
-    private String bootstrapServers;
 
     @Value("${spring.application.name}")
     private String serviceName;
@@ -57,19 +54,20 @@ public class QueueMetricsService {
      */
     @Scheduled(fixedDelayString = "${rttm.metrics.interval-ms:30000}")
     public void sendQueueMetrics() {
-        try (KafkaConsumer<String, String> consumer = createKafkaConsumer()) {
+        try {
             // Send metrics for incoming topic
             // Every service sends metrics for their outgoing service
-            // Don't send cuz monitoring incoming topic is not our job, this topic is previous service's job 
+            // Don't send cuz monitoring incoming topic is not our job, this topic is
+            // previous service's job
             // (as this topic is their outgoing topic)
-            // sendMetricsForAllPartitions(consumer, incomingTopic);
+            // sendMetricsForAllPartitions(metricsConsumer, incomingTopic);
 
             // Send metrics for valid trades topic
-            sendMetricsForAllPartitions(consumer, validTradesTopic);
+            sendMetricsForAllPartitions(metricsConsumer, validTradesTopic);
 
             // Send metrics for invalid trades topic
             // Don't send cuz invalid trades is not in pipeline
-            // sendMetricsForAllPartitions(consumer, invalidTradesTopic);
+            // sendMetricsForAllPartitions(metricsConsumer, invalidTradesTopic);
 
             log.debug("Queue metrics sent to RTTM successfully");
         } catch (Exception ex) {
@@ -130,17 +128,3 @@ public class QueueMetricsService {
             log.warn("Failed to send queue metric for {}: {}", topicName, ex.getMessage());
         }
     }
-
-    /**
-     * Create a temporary Kafka consumer to query offsets
-     */
-    private KafkaConsumer<String, String> createKafkaConsumer() {
-        Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroup);
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
-        return new KafkaConsumer<>(props);
-    }
-}

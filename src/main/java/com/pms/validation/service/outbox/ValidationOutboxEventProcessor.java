@@ -51,7 +51,7 @@ public class ValidationOutboxEventProcessor {
     private String serviceName;
 
     @Transactional
-    public ProcessingResult dispatchOnce() {
+    public ProcessingResult<ValidationOutboxEntity> dispatchOnce() {
 
         int limit = batchSizer.getCurrentSize();
         log.info("Limit of this batch {}.", limit);
@@ -67,7 +67,7 @@ public class ValidationOutboxEventProcessor {
 
         long start = System.currentTimeMillis();
 
-        ProcessingResult result = process(batch);
+        ProcessingResult<ValidationOutboxEntity> result = process(batch);
 
         long duration = System.currentTimeMillis() - start;
 
@@ -88,7 +88,7 @@ public class ValidationOutboxEventProcessor {
         return result;
     }
 
-    public ProcessingResult process(List<ValidationOutboxEntity> events) {
+    public ProcessingResult<ValidationOutboxEntity> process(List<ValidationOutboxEntity> events) {
 
         List<Long> successfulIds = new ArrayList<>();
 
@@ -101,7 +101,7 @@ public class ValidationOutboxEventProcessor {
                 int partition = metadata.partition();
                 long offset = metadata.offset();
 
-                log.info("Event {} sent to kafka successfully.", proto);
+                log.info("Valid Trade with ID {} sent to kafka successfully.", proto.getTradeId());
 
                 // Don't Send trade completion event to RTTM again for same trade id
                 // Send trade completion event to RTTM

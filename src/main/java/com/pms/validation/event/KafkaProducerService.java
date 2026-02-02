@@ -12,12 +12,16 @@ import com.pms.validation.mapper.ProtoDTOMapper;
 import com.pms.validation.mapper.ProtoEntityMapper;
 import com.pms.validation.mapper.ProtoInvalidTradeEntityMapper;
 import com.pms.validation.proto.TradeEventProto;
+import com.pms.validation.proto.InvalidTradeEventProto;
 
 @Service
 public class KafkaProducerService {
 
     @Autowired
     private KafkaTemplate<String, TradeEventProto> kafkaTemplate;
+
+    @Autowired
+    private KafkaTemplate<String, InvalidTradeEventProto> invalidTradeKafkaTemplate;
 
     @Value("${app.incoming-trades-topic}")
     private String incomingTradesTopic;
@@ -44,8 +48,8 @@ public class KafkaProducerService {
 
     public void sendInvalidTradeEvent(InvalidTradeEntity event) throws Exception {
 
-        TradeEventProto protoEvent = ProtoInvalidTradeEntityMapper.toProto(event);
+        InvalidTradeEventProto protoEvent = ProtoInvalidTradeEntityMapper.toProto(event);
 
-        kafkaTemplate.send(invalidTradesTopic, protoEvent.getPortfolioId(), protoEvent).get();
+        invalidTradeKafkaTemplate.send(invalidTradesTopic, protoEvent.getPortfolioId(), protoEvent).get();
     }
 }

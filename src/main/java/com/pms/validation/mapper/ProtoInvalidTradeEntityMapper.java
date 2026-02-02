@@ -9,15 +9,15 @@ import org.springframework.stereotype.Component;
 
 import com.google.protobuf.Timestamp;
 import com.pms.validation.entity.InvalidTradeEntity;
-import com.pms.validation.proto.TradeEventProto;
+import com.pms.validation.proto.InvalidTradeEventProto;
 
 @Component
 public class ProtoInvalidTradeEntityMapper {
 
     // --------------------- ENTITY → PROTO ---------------------
-    public static TradeEventProto toProto(InvalidTradeEntity entity) {
+    public static InvalidTradeEventProto toProto(InvalidTradeEntity entity) {
 
-        TradeEventProto.Builder builder = TradeEventProto.newBuilder();
+        InvalidTradeEventProto.Builder builder = InvalidTradeEventProto.newBuilder();
 
         if (entity.getPortfolioId() != null) {
             builder.setPortfolioId(entity.getPortfolioId().toString());
@@ -47,11 +47,15 @@ public class ProtoInvalidTradeEntityMapper {
             builder.setTimestamp(convertLocalDateTime(entity.getTradeTimestamp()));
         }
 
+        if (entity.getValidationErrors() != null && !entity.getValidationErrors().isEmpty()) {
+            builder.setValidationErrors(entity.getValidationErrors());
+        }
+
         return builder.build();
     }
 
     // --------------------- PROTO → ENTITY ---------------------
-    public static InvalidTradeEntity toEntity(TradeEventProto proto) {
+    public static InvalidTradeEntity toEntity(InvalidTradeEventProto proto) {
 
         return InvalidTradeEntity.builder()
                 .portfolioId(proto.getPortfolioId().isEmpty() ? null : UUID.fromString(proto.getPortfolioId()))
@@ -63,6 +67,7 @@ public class ProtoInvalidTradeEntityMapper {
                         proto.getPricePerStock() == 0 ? null : java.math.BigDecimal.valueOf(proto.getPricePerStock()))
                 .quantity(proto.getQuantity() == 0 ? null : proto.getQuantity())
                 .tradeTimestamp(proto.hasTimestamp() ? convertTimestamp(proto.getTimestamp()) : null)
+                .validationErrors(proto.getValidationErrors().isEmpty() ? null : proto.getValidationErrors())
                 .build();
     }
 

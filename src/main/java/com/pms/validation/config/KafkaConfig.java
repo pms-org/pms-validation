@@ -2,9 +2,11 @@ package com.pms.validation.config;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -22,6 +24,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 
 import com.pms.validation.proto.TradeEventProto;
+import com.pms.validation.proto.InvalidTradeEventProto;
 import com.google.protobuf.MessageLite;
 
 import io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializer;
@@ -109,6 +112,44 @@ public class KafkaConfig {
 		return new KafkaTemplate<>(producerFactory());
 	}
 
+	@Bean
+	ProducerFactory<String, InvalidTradeEventProto> invalidTradeProducerFactory() {
+
+		Map<String, Object> props = new HashMap<>();
+
+		props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrapServers);
+		props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+
+		// Protobuf serializer
+		props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+				io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer.class);
+
+		props.put("schema.registry.url", schemaRegistryUrl);
+
+		// Retry 5 times
+		props.put(ProducerConfig.RETRIES_CONFIG, 5);
+
+		// Delay between retries (500ms default)
+		props.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, 1000); // 1 sec
+
+		// Maximum time allowed for send including retries
+		props.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG, 30000); // 30 sec total timeout
+
+		// Timeout waiting for broker ack
+		props.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, 15000); // 15 sec
+
+		// Ensure safe producer (no duplicates)
+		props.put(ProducerConfig.ACKS_CONFIG, "all");
+		props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
+
+		return new DefaultKafkaProducerFactory<>(props);
+	}
+
+	@Bean
+	KafkaTemplate<String, InvalidTradeEventProto> invalidTradeKafkaTemplate() {
+		return new KafkaTemplate<>(invalidTradeProducerFactory());
+	}
+
 	// Generic KafkaTemplate for RTTM Client to send any MessageLite (protobuf
 	// messages)
 	@Bean
@@ -136,6 +177,18 @@ public class KafkaConfig {
 	@Bean
 	KafkaTemplate<String, MessageLite> messageLiteKafkaTemplate() {
 		return new KafkaTemplate<>(messageLiteProducerFactory());
+	}
+
+	// Bean for metrics consumer - used by QueueMetricsService to query offsets
+	@Bean
+	KafkaConsumer<String, String> metricsConsumer() {
+		Properties props = new Properties();
+		props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrapServers);
+		props.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupId);
+		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+		props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+		props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
+		return new KafkaConsumer<>(props);
 	}
 
 	@Bean(name = "protobufKafkaListenerContainerFactory")
