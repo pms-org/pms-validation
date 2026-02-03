@@ -3,6 +3,7 @@ package com.pms.validation.service.outbox;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.kafka.common.errors.SerializationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,7 @@ import com.pms.validation.mapper.ProtoInvalidTradeEntityMapper;
 import com.pms.validation.repository.InvalidTradeRepository;
 import com.pms.validation.repository.DlqRepository;
 import com.pms.validation.entity.DlqEntry;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.pms.rttm.client.clients.RttmClient;
 import com.pms.rttm.client.dto.DlqEventPayload;
 import com.pms.rttm.client.enums.EventStage;
@@ -111,9 +113,9 @@ public class InvalidTradeOutboxEventProcessor {
 
                 // Simple poison-pill classification: serialization and illegal argument are
                 // considered poison
-                boolean poison = cause instanceof org.apache.kafka.common.errors.SerializationException
+                boolean poison = cause instanceof SerializationException
                         || cause instanceof IllegalArgumentException
-                        || cause instanceof com.fasterxml.jackson.core.JsonProcessingException;
+                        || cause instanceof JsonProcessingException;
 
                 if (poison) {
                     try {

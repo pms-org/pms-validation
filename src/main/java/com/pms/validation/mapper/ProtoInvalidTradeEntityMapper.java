@@ -1,5 +1,6 @@
 package com.pms.validation.mapper;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.google.protobuf.Timestamp;
 import com.pms.validation.entity.InvalidTradeEntity;
+import com.pms.validation.enums.TradeSide;
 import com.pms.validation.proto.InvalidTradeEventProto;
 
 @Component
@@ -62,9 +64,9 @@ public class ProtoInvalidTradeEntityMapper {
                 .tradeId(proto.getTradeId().isEmpty() ? null : UUID.fromString(proto.getTradeId()))
                 .symbol(proto.getSymbol().isEmpty() ? null : proto.getSymbol())
                 .side(proto.getSide().isEmpty() ? null
-                        : Enum.valueOf(com.pms.validation.enums.TradeSide.class, proto.getSide()))
+                        : Enum.valueOf(TradeSide.class, proto.getSide()))
                 .pricePerStock(
-                        proto.getPricePerStock() == 0 ? null : java.math.BigDecimal.valueOf(proto.getPricePerStock()))
+                        proto.getPricePerStock() == 0 ? null : BigDecimal.valueOf(proto.getPricePerStock()))
                 .quantity(proto.getQuantity() == 0 ? null : proto.getQuantity())
                 .tradeTimestamp(proto.hasTimestamp() ? convertTimestamp(proto.getTimestamp()) : null)
                 .validationErrors(proto.getValidationErrors().isEmpty() ? null : proto.getValidationErrors())

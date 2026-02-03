@@ -209,7 +209,7 @@ public class KafkaConfig {
 
 		// IMPORTANT: Tell Kafka which Protobuf type to convert the bytes into
 		props.put("specific.protobuf.value.type",
-				"com.pms.validation.proto.TradeEventProto");
+				TradeEventProto.class.getName());
 
 		DefaultKafkaConsumerFactory<String, TradeEventProto> consumerFactory = new DefaultKafkaConsumerFactory<>(
 				props);

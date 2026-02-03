@@ -1,5 +1,6 @@
 package com.pms.validation.mapper;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -24,7 +25,7 @@ public class ProtoDTOMapper {
                 .symbol(proto.getSymbol().isEmpty() ? null : proto.getSymbol())
                 .side(proto.getSide().isEmpty() ? null : TradeSide.valueOf(proto.getSide()))
                 .pricePerStock(
-                        proto.getPricePerStock() == 0 ? null : java.math.BigDecimal.valueOf(proto.getPricePerStock()))
+                        proto.getPricePerStock() == 0 ? null : BigDecimal.valueOf(proto.getPricePerStock()))
                 .quantity(proto.getQuantity() == 0 ? null : proto.getQuantity())
                 .timestamp(proto.hasTimestamp() ? convertTimestamp(proto.getTimestamp()) : null)
                 .build();

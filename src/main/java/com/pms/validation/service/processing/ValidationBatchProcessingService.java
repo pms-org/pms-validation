@@ -112,8 +112,12 @@ public class ValidationBatchProcessingService {
                     sendTradeValidationEvent(dto, true, null, partition, offset, topic, consumerGroup);
                 } else {
                     invalidToSave.add(decision.getInvalidEntity());
-                    sendTradeValidationEvent(dto, false, decision.getInvalidEntity().getValidationErrors(), partition,
-                            offset, topic, consumerGroup);
+                    // Here you're sending invalid trades in rttm.trade.events topic which is meant
+                    // only for valid trades,
+                    // so send in invalid-trades-topic which the Invalid Outbox does.
+                    // sendTradeValidationEvent(dto, false,
+                    // decision.getInvalidEntity().getValidationErrors(), partition,
+                    // offset, topic, consumerGroup);
                 }
 
                 successfulIds.add(dto.getTradeId());
@@ -172,16 +176,6 @@ public class ValidationBatchProcessingService {
                 }
             });
         }
-
-        try {
-            if (messagingTemplate != null) {
-                messagingTemplate.convertAndSend("/topic/position-update", dtos);
-            } else {
-                log.debug("SimpMessagingTemplate not present, skipping websocket update");
-            }
-        } catch (RuntimeException ex) {
-            log.warn("Failed to send websocket update", ex);
-        }
     }
 
     /**
@@ -199,14 +193,14 @@ public class ValidationBatchProcessingService {
                     .serviceName(serviceName)
                     .eventType(EventType.TRADE_VALIDATED)
                     .eventStage(EventStage.VALIDATED)
-                    .eventStatus(valid ? "OK" : "VALIDATION_FAILED")
+                    .eventStatus("OK")
                     .sourceQueue(topic)
-                    .targetQueue(valid ? validTradesTopic : invalidTradesTopic)
-                    .message(valid ? "Trade validation passed" : errors)
+                    .targetQueue(validTradesTopic)
+                    .message("Trade validation passed")
                     .build();
 
             rttmClient.sendTradeEvent(event);
-            log.debug("Sent validation event to RTTM for trade {}", trade.getTradeId());
+            log.debug("Sent Trade event (Valid Trade) to RTTM for trade {}", trade.getTradeId());
         } catch (Exception ex) {
             log.warn("Failed to send trade validation event to RTTM: {}", ex.getMessage());
         }
