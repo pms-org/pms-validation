@@ -85,6 +85,12 @@ app:
   incoming-trades-topic: ${INCOMING_TRADES_TOPIC}
   outgoing-valid-trades-topic: ${OUTGOING_VALID_TRADES_TOPIC}
   outgoing-invalid-trades-topic: ${OUTGOING_INVALID_TRADES_TOPIC}
+  buffer:
+    size: ${VALIDATION_BUFFER_SIZE:50}
+  validation:
+    batch:
+      size: ${VALIDATION_BATCH_SIZE:1000}
+    flush-interval-ms: ${VALIDATION_FLUSH_INTERVAL_MS:5000}
 
 logging:
   level:

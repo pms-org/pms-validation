@@ -1,26 +1,20 @@
 package com.pms.validation.event;
 
 import java.util.List;
-import java.util.UUID;
+import java.util.concurrent.LinkedBlockingDeque;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataAccessException;
 import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
-import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.CannotCreateTransactionException;
 
-import com.pms.validation.dto.TradeDto;
-import com.pms.validation.mapper.ProtoDTOMapper;
 import com.pms.validation.proto.TradeEventProto;
-import com.pms.validation.service.domain.TradeIdempotencyService;
-import com.pms.validation.service.health.DbHealthMonitor;
-import com.pms.validation.service.processing.ValidationBatchProcessingService;
+import com.pms.validation.service.processing.ValidationBatchProcessor;
+import com.pms.validation.wrapper.PollBatch;
 import com.pms.rttm.client.clients.RttmClient;
 import com.pms.rttm.client.dto.DlqEventPayload;
 import com.pms.rttm.client.enums.EventStage;
@@ -32,22 +26,19 @@ import lombok.extern.slf4j.Slf4j;
 public class KafkaConsumerService {
 
     @Autowired
-    private ValidationBatchProcessingService batchProcessingService;
+    private LinkedBlockingDeque<PollBatch> validationBuffer;
 
     @Autowired
-    private TradeIdempotencyService tradeIdempotencyService;
-
-    @Autowired
-    private KafkaListenerEndpointRegistry registry;
-
-    @Autowired
-    private DbHealthMonitor dbHealthMonitor;
+    private ValidationBatchProcessor batchProcessor;
 
     @Autowired
     private RttmClient rttmClient;
 
     @Value("${spring.application.name}")
     private String serviceName;
+    
+    @Value("${app.buffer.size:50}")
+    private int bufferSize;
 
     // Batch consumer: receives a list of protobuf messages and manual ack
     @KafkaListener(id = "tradesListener", topics = "${app.incoming-trades-topic}", groupId = "${spring.kafka.consumer.group-id}", containerFactory = "protobufKafkaListenerContainerFactory")
@@ -57,27 +48,23 @@ public class KafkaConsumerService {
             @Header(KafkaHeaders.OFFSET) List<Long> offsets,
             @Header(KafkaHeaders.GROUP_ID) String consumerGroup) {
 
-        try {
-            log.info("Received {} trade messages from partition {}", messages.size(), partition);
+        log.info("Received {} trade messages from partition {}", messages.size(), partition);
 
-            // Extract single topic name from list (all messages in batch should be from
-            // same topic)
-            String topic = (topics != null && !topics.isEmpty()) ? topics.get(0) : "unknown-topic";
+        // Extract single topic name from list (all messages in batch should be from same topic)
+        String topic = (topics != null && !topics.isEmpty()) ? topics.get(0) : "unknown-topic";
 
-            // Convert to DTOs and delegate to batch processor
-            batchProcessingService.processBatch(messages, partition, topic, offsets, consumerGroup);
+        // Create PollBatch and offer to buffer
+        PollBatch pollBatch = new PollBatch(messages, ack, partition, topic, offsets, consumerGroup);
+        validationBuffer.offer(pollBatch);
+        
+        log.debug("Added batch to buffer. Current buffer size: {}", validationBuffer.size());
 
-            ack.acknowledge();
-        } catch (CannotCreateTransactionException | DataAccessException ex) {
-            log.error("DB Down -->  pausing Kafka consumer", ex);
-            // Pause the consumer on DB failures or connectivity issues
-            // Stop the listener and start monitoring to resume when DB is back
-            var container = registry.getListenerContainer("tradesListener");
-            if (container != null) {
-                container.stop();
-            }
-            dbHealthMonitor.pause();
+        // Check if we should trigger batch processing
+        if (validationBuffer.size() >= bufferSize * 0.8) {
+            batchProcessor.checkAndFlush();
         }
+        
+        batchProcessor.checkAndFlush();
     }
 
     @DltHandler
