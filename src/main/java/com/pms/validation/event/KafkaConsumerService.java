@@ -85,7 +85,7 @@ public class KafkaConsumerService {
                     .topicName(dltTopic)
                     .originalTopic(originalTopic)
                     .reason("Deserialization error or max retries exceeded")
-                    .eventStage(EventStage.CONSUME)
+                    .eventStage(EventStage.RECEIVED)
                     .build();
 
             rttmClient.sendDlqEvent(dlqEvent);
