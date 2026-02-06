@@ -11,7 +11,7 @@ spring:
       - org.springframework.cloud.autoconfigure.LifecycleMvcEndpointAutoConfiguration
 
   datasource:
-    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME:pmsdb}
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME:pms_db}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: ${DB_DRIVER:org.postgresql.Driver}
