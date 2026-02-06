@@ -128,8 +128,9 @@ public class ValidationOutboxEventProcessor {
                         try {
                             proto = ProtoEntityMapper.toProto(outbox);
                         } catch (Exception ex) {
-                            // TODO: Handle this exception
-                            // ignore, we'll persist empty payload if proto can't be built
+                            log.warn("Failed to convert outbox {} to proto for DLQ persistence: {}", 
+                                    outbox.getValidationOutboxId(), ex.getMessage());
+                            // We'll persist empty payload if proto can't be built
                         }
 
                         byte[] payload = proto != null ? proto.toByteArray() : new byte[0];

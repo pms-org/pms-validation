@@ -1,2 +1,1 @@
-TODO: Handle empty exception blocks 
-TODO: Invalid trades is sent to RTTM twice. Once in outbox patter, another after drools validation
+

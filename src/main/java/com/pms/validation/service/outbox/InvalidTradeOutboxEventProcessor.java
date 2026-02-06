@@ -124,7 +124,9 @@ public class InvalidTradeOutboxEventProcessor {
                         try {
                             proto = ProtoInvalidTradeEntityMapper.toProto(invalidTrade);
                         } catch (Exception ex) {
-                            // ignore, we'll persist empty payload if proto can't be built
+                            log.warn("Failed to convert invalid trade {} to proto for DLQ persistence: {}", 
+                                    invalidTrade.getInvalidTradeOutboxId(), ex.getMessage());
+                            // We'll persist empty payload if proto can't be built
                         }
 
                         byte[] payload = proto != null ? proto.toByteArray() : new byte[0];
