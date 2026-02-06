@@ -64,7 +64,7 @@ public class ValidationBatchProcessingService {
     private String serviceName;
 
     @Transactional
-    public void processBatch(List<TradeEventProto> messages, int partition, String topic, List<Long> offsets,
+    public void processBatch(List<TradeEventProto> messages, List<Integer> partitions, String topic, List<Long> offsets,
             String consumerGroup) {
         log.info("Processing validation batch of {} trades.", messages.size());
 
@@ -84,6 +84,7 @@ public class ValidationBatchProcessingService {
         for (int i = 0; i < dtos.size(); i++) {
             TradeDto dto = dtos.get(i);
             Long offset = (offsets != null && i < offsets.size()) ? offsets.get(i) : 0L;
+            Integer partition = (partitions != null && i < partitions.size()) ? partitions.get(i) : 0;
             // idempotency check
             if (dto.getTradeId() == null) {
                 log.warn("Skipping trade with null id");

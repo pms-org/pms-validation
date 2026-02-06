@@ -11,9 +11,8 @@ import com.pms.rttm.client.config.RttmClientConfig;
 
 @Configuration
 public class RttmClientConfiguration {
-
 	@Bean
-	public RttmClient rttmClient(
+	RttmClient rttmClient(
 			KafkaTemplate<String, MessageLite> kafkaTemplate,
 			RttmClientProperties properties) {
 

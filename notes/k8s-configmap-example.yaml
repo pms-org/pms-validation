@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: validation-service-config
+  namespace: default
+data:
+  # Redis Sentinel Configuration
+  REDIS_SENTINEL_MASTER: "mymaster"
+  REDIS_SENTINEL_NODES: "sentinel-1.default.svc.cluster.local:26379,sentinel-2.default.svc.cluster.local:26379,sentinel-3.default.svc.cluster.local:26379"
+  REDIS_TIMEOUT: "2s"
+  
+  # Kafka Configuration
+  KAFKA_BOOTSTRAP_SERVERS: "kafka.default.svc.cluster.local:9092"
+  KAFKA_CONSUMER_GROUP_ID: "validation-consumer-group"
+  SCHEMA_REGISTRY_URL: "http://schema-registry.default.svc.cluster.local:8081"
+  
+  # Application Topics
+  INCOMING_TRADES_TOPIC: "raw-trades-topic"
+  OUTGOING_VALID_TRADES_TOPIC: "valid-trades-topic"
+  OUTGOING_INVALID_TRADES_TOPIC: "invalid-trades-topic"
+  
+  # Database
+  DB_HOST: "postgres.default.svc.cluster.local"
+  DB_PORT: "5432"
+  DB_NAME: "pms_db"
+  
+  # Server
+  SERVER_PORT: "8083"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: validation-service-secrets
+  namespace: default
+type: Opaque
+stringData:
+  DB_USERNAME: "postgres"
+  DB_PASSWORD: "your-secure-password"
+  REDIS_PASSWORD: ""
+  REDIS_SENTINEL_PASSWORD: ""

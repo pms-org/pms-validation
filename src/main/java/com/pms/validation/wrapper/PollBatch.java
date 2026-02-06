@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 public class PollBatch {
     private List<TradeEventProto> tradeProtos;
     private Acknowledgment ack;
-    private int partition;
+    private List<Integer> partitions;
     private String topic;
     private List<Long> offsets;
     private String consumerGroup;

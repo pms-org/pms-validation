@@ -106,21 +106,32 @@ public class ValidationBatchProcessor implements SmartLifecycle {
         }
 
         try {
-            // Use metadata from the first poll batch (assuming all are from same topic/partition in practice)
+            // Use metadata from the first poll batch for topic and consumer group
             PollBatch firstPoll = pollsInTheBatch.get(0);
-            
+
+            // Collect all partitions and offsets from all polls
+            List<Integer> allPartitions = new ArrayList<>();
+            List<Long> allOffsets = new ArrayList<>();
+            for (PollBatch poll : pollsInTheBatch) {
+                if (poll.getPartitions() != null) {
+                    allPartitions.addAll(poll.getPartitions());
+                }
+                if (poll.getOffsets() != null) {
+                    allOffsets.addAll(poll.getOffsets());
+                }
+            }
+
             // Process the batch
             validationBatchProcessingService.processBatch(
-                batchTrades,
-                firstPoll.getPartition(),
-                firstPoll.getTopic(),
-                firstPoll.getOffsets(),
-                firstPoll.getConsumerGroup()
-            );
+                    batchTrades,
+                    allPartitions,
+                    firstPoll.getTopic(),
+                    allOffsets,
+                    firstPoll.getConsumerGroup());
 
             // Acknowledge all polls in the batch
             pollsInTheBatch.forEach(poll -> poll.getAck().acknowledge());
-            
+
             log.info("Successfully processed and acknowledged {} trade events", batchTrades.size());
 
             // If recovering and buffer is below 50%, resume consumer
@@ -130,23 +141,23 @@ public class ValidationBatchProcessor implements SmartLifecycle {
 
         } catch (DataAccessResourceFailureException e) {
             log.error("DB Connection failure. Pausing consumer and returning batches to buffer.");
-            
+
             // Return batches to front of buffer in reverse order
             for (int i = pollsInTheBatch.size() - 1; i >= 0; i--) {
                 validationBuffer.offerFirst(pollsInTheBatch.get(i));
             }
-            
+
             handleConsumerThread(true);
             throw e;
-            
+
         } catch (Exception e) {
             log.error("Exception occurred during batch processing: {}", e.getMessage(), e);
-            
+
             // Return batches to front of buffer in reverse order
             for (int i = pollsInTheBatch.size() - 1; i >= 0; i--) {
                 validationBuffer.offerFirst(pollsInTheBatch.get(i));
             }
-            
+
             throw e;
         }
     }
@@ -162,11 +173,11 @@ public class ValidationBatchProcessor implements SmartLifecycle {
     public void stop(Runnable callback) {
         log.info("ValidationBatchProcessor stopping: Performing final flush");
         batchFlushScheduler.shutdown();
-        
+
         if (!validationBuffer.isEmpty()) {
             flushBatch();
         }
-        
+
         this.isRunning = false;
         callback.run();
     }
@@ -184,7 +195,7 @@ public class ValidationBatchProcessor implements SmartLifecycle {
             container.pause();
             log.warn("Kafka Consumer paused.");
         }
-        
+
         if (startDaemon) {
             log.warn("Starting background probe daemon...");
             startDaemon();
@@ -196,7 +207,7 @@ public class ValidationBatchProcessor implements SmartLifecycle {
         if (container != null && container.isContainerPaused()) {
             container.resume();
             log.info("Buffer cleared to 50% ({} batches). Resuming consumer.", validationBuffer.size());
-            
+
             synchronized (this) {
                 isRecovering = false;
             }
