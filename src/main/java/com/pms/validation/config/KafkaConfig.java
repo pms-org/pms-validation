@@ -180,6 +180,8 @@ public class KafkaConfig {
 	}
 
 	// Bean for metrics consumer - used by QueueMetricsService to query offsets
+	// This consumer only queries metadata (offsets), never actually consumes
+	// messages
 	@Bean
 	KafkaConsumer<String, String> metricsConsumer() {
 		Properties props = new Properties();
@@ -188,6 +190,7 @@ public class KafkaConfig {
 		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
 		props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
 		props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
+		props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest"); // Monitoring uses current state
 		return new KafkaConsumer<>(props);
 	}
 
@@ -203,6 +206,7 @@ public class KafkaConfig {
 		// IMPORTANT: Protobuf deserializer
 		props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
 				KafkaProtobufDeserializer.class);
+		props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
 		// REQUIRED
 		props.put("schema.registry.url", schemaRegistryUrl);
